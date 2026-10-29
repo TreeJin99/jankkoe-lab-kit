@@ -1,0 +1,8 @@
+# 실습 결과물은 올리지 않는다
+결과/*
+!결과/.gitkeep
+
+.DS_Store
+Thumbs.db
+.claude/settings.local.json
+node_modules/
