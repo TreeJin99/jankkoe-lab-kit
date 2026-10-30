@@ -5,9 +5,9 @@
 | 할 일 | 명령 |
 |---|---|
 | 목차·과업 틀 받기 | `node scripts/hwpx.js draft sow {고객코드}` → `outputs/_draft/sow_{고객코드}.md` |
-| 원고로 새로 만들기 | `node scripts/hwpx.js fill sow {고객코드}` → `outputs/sow_{고객코드}.hwpx` (견본 templates/sow.hwpx 서식) |
+| 원고로 새로 만들기 | `node scripts/hwpx.js fill sow {고객코드}` → `outputs/과업지시서_{고객사}.hwpx` (견본 templates/sow.hwpx 서식) |
 | hwpx 내용 읽기 | `node scripts/hwpx.js read outputs/파일.hwpx` |
-| 검산만 따로 | `node scripts/check.js outputs/sow_{고객코드}.hwpx` |
+| 검산만 따로 | `node scripts/check.js outputs/과업지시서_{고객사}.hwpx` |
 | 원고 지우기 | `node scripts/hwpx.js clean` |
 
 | 이런 말이 나오면 | 이렇게 |

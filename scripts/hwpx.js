@@ -39,14 +39,35 @@ function read(file) {
 // --template 경로가 있으면 기본 양식 대신 그 양식(우리 회사 hwpx)을 쓴다
 const TPL = (() => { const i = process.argv.indexOf("--template"); return i > 0 ? path.resolve(ROOT, process.argv[i + 1]) : null; })();
 
+// 결과 파일 이름은 한글: outputs/견적서_바다상사.hwpx (고객사 이름은 요청 기록에서, 파일명에 못 쓰는 글자만 뺌, NFC)
+const safeName = (s) => String(s || "").normalize("NFC").replace(/[\\/:*?"<>|]/g, "").replace(/\s+/g, " ").trim();
+const reqPath = (code) => path.join(ROOT, "outputs", "_requests", `${code}.json`);
+function outName(doc, code) {
+  const rp = reqPath(code);
+  const customer = fs.existsSync(rp) ? JSON.parse(fs.readFileSync(rp, "utf8")).customer : "";
+  return `${DOCS[doc]}_${safeName(customer) || code}.hwpx`.normalize("NFC");
+}
+
 function paths(doc, code) {
   if (!DOCS[doc]) throw new Error(`문서 종류는 quote · sow 중 하나입니다: ${doc}`);
   if (!/^[a-z0-9-]+$/.test(code || "")) throw new Error(`고객코드는 영문 소문자·숫자·하이픈만: ${code}`);
   return {
     template: (doc === "quote" && TPL) || path.join(ROOT, "templates", `${doc}.hwpx`),
     draft: path.join(DRAFT_DIR, `${doc}_${code}.md`),
-    output: path.join(ROOT, "outputs", `${doc}_${code}.hwpx`),
+    output: path.join(ROOT, "outputs", outName(doc, code)),
   };
+}
+
+// 저장 뒤: hwpx 문서 정보 제목을 한글로, 요청 기록에 결과 파일 경로를 남긴다
+function finish(doc, code, output) {
+  const title = path.basename(output, ".hwpx");
+  require("./hwpx-pics.js").setTitle(output, title);
+  const rp = reqPath(code);
+  if (fs.existsSync(rp)) {
+    const r = JSON.parse(fs.readFileSync(rp, "utf8"));
+    r.outputs = { ...(r.outputs || {}), [doc]: path.relative(ROOT, output).split(path.sep).join("/") };
+    fs.writeFileSync(rp, JSON.stringify(r, null, 2));
+  }
 }
 
 function main() {
@@ -87,6 +108,7 @@ function main() {
       }
     }
     fs.rmSync(gen, { force: true });
+    finish(a, b, p.output);
     console.log(`저장: ${path.relative(ROOT, p.output)} (과업지시서, 견본 서식으로 생성${pics.length ? `, 그림 ${put}/${pics.length}장` : ""})`);
   } else if (cmd === "draft") {
     const p = paths(a, b);
@@ -105,6 +127,7 @@ function main() {
       console.log(`건너뛴 칸 ${res.skipped.length}개. 원고를 고쳐 다시 fill 하세요:\n${JSON.stringify(res.skipped, null, 1)}`);
       process.exit(2);
     }
+    finish(a, b, p.output);
     console.log(`저장: ${path.relative(ROOT, p.output)} (${DOCS[a]}, 채운 칸 ${res.applied}개)`);
   } else if (cmd === "read") {
     console.log(read(path.resolve(a)));
@@ -116,7 +139,7 @@ function main() {
   }
 }
 
-module.exports = { read, ROOT, DOCS };
+module.exports = { read, ROOT, DOCS, safeName };
 if (require.main === module) {
   try { main(); } catch (e) { console.error(e.message); process.exit(1); }
 }

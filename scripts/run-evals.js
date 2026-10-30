@@ -76,7 +76,7 @@ function field(md, label) {
 
 function grade(dir, ck, run) {
   const fails = [];
-  const outs = fs.readdirSync(path.join(dir, "outputs")).filter((n) => n.endsWith(".hwpx"));
+  const outs = fs.readdirSync(path.join(dir, "outputs")).map((n) => n.normalize("NFC")).filter((n) => n.endsWith(".hwpx"));
   if (ck.file) {
     if (!fs.existsSync(path.join(dir, ck.file))) fails.push(`${ck.file} 없음`);
     else {

@@ -67,4 +67,15 @@ function insertPics(hwpx, pics) {
   return done;
 }
 
-module.exports = { insertPics };
+// hwpx 문서 정보(content.hpf)에 한글 제목을 넣는다: 한글 창·문서 정보에 영문 대신 「견적서_바다상사」
+function setTitle(hwpx, title) {
+  const files = unzip(fs.readFileSync(hwpx));
+  const hpf = files.find((f) => f.name === "Contents/content.hpf");
+  let m = hpf.data.toString("utf8").replace(/<opf:title>[^<]*<\/opf:title>/, "");
+  const esc = title.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  m = m.replace("<opf:metadata>", `<opf:metadata><opf:title>${esc}</opf:title>`);
+  hpf.data = Buffer.from(m, "utf8");
+  fs.writeFileSync(hwpx, zip(files));
+}
+
+module.exports = { insertPics, setTitle };

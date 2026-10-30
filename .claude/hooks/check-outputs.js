@@ -18,13 +18,13 @@ try { seen = JSON.parse(fs.readFileSync(memo, "utf8")); } catch {
   // 처음 도는 폴더: 2분 전보다 오래된 파일은 예전 결과물로 보고 건너뛴다.
   for (const n of fs.readdirSync(dir).filter((x) => x.endsWith(".hwpx"))) {
     const t = fs.statSync(path.join(dir, n)).mtimeMs;
-    if (Date.now() - t > 120000) seen[n] = t;
+    if (Date.now() - t > 120000) seen[n.normalize("NFC")] = t;
   }
 }
 
 const todo = fs.readdirSync(dir)
   .filter((n) => n.endsWith(".hwpx"))
-  .filter((n) => seen[n] !== fs.statSync(path.join(dir, n)).mtimeMs);
+  .filter((n) => seen[n.normalize("NFC")] !== fs.statSync(path.join(dir, n)).mtimeMs);
 if (!todo.length) process.exit(0);
 
 const { check } = require(path.join(root, "scripts", "check.js"));
@@ -34,9 +34,9 @@ for (const n of todo) {
   const file = path.join(dir, n);
   let errs;
   try { errs = check(file); } catch (e) { errs = [e.message]; }
-  if (errs.length) fail.push(`${n}\n${errs.map((e) => `- ${e}`).join("\n")}`);
-  else pass.push(n);
-  seen[n] = fs.statSync(file).mtimeMs;
+  if (errs.length) fail.push(`${n.normalize("NFC")}\n${errs.map((e) => `- ${e}`).join("\n")}`);
+  else pass.push(n.normalize("NFC"));
+  seen[n.normalize("NFC")] = fs.statSync(file).mtimeMs;
 }
 try { fs.writeFileSync(memo, JSON.stringify(seen)); } catch {}
 

@@ -6,12 +6,12 @@
       "type": "positive",
       "prompt": "견적서 만들어줘. 예시 회사로, 고객사 바다상사 이수진 과장, 홈페이지 리뉴얼, 기획 1 · 메인 1 · 서브 7 · 반응형 1 · 게시판 1 · 문의폼 1 · 콘텐츠 이전 8, 견적일 오늘, 납기 2026-11-30, 비고 도메인·호스팅은 기존 것 사용. 이대로 확정이니 다시 묻지 말고 진행해줘.",
       "files": [],
-      "expected_output": "값을 다 줬으므로 다시 묻지 않고, 예시 회사 정보를 data/로 복사한 뒤 outputs/quote_badasangsa.hwpx를 만듦. 합계 5,445,000원, quote-writer 작성 뒤 reviewer 검수",
+      "expected_output": "값을 다 줬으므로 다시 묻지 않고, 예시 회사 정보를 data/로 복사한 뒤 outputs/견적서_바다상사.hwpx를 만듦. 합계 5,445,000원, quote-writer 작성 뒤 reviewer 검수",
       "expectations": [
         "AskUserQuestion으로 다시 묻지 않음",
         "data/company.md가 예시 회사 정보로 채워짐",
         "outputs/_requests/badasangsa.json이 저장됨",
-        "outputs/quote_badasangsa.hwpx가 생성되고 check.js 검산을 통과함",
+        "outputs/견적서_바다상사.hwpx가 생성되고 check.js 검산을 통과함",
         "합계 칸이 5,445,000원, 고객사 칸이 '바다상사'임",
         "quote-writer 서브에이전트가 reviewer보다 먼저 호출됨"
       ],
@@ -21,7 +21,7 @@
         "메인 대화가 quote-writer 없이 직접 작성함"
       ],
       "checks": {
-        "file": "outputs/quote_badasangsa.hwpx",
+        "file": "outputs/견적서_바다상사.hwpx",
         "check_pass": true,
         "field": {
           "합계": 5445000,

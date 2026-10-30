@@ -1,11 +1,11 @@
 // outputs/의 hwpx를 읽어 검산한다. 틀리면 이유를 줄마다 하나씩 알려 준다.
 // 대조 기준: 확정된 요청 기록 outputs/_requests/{고객코드}.json · 회사 정보 data/company.md
-//   node scripts/check.js outputs/quote_badasangsa.hwpx
+//   node scripts/check.js outputs/견적서_바다상사.hwpx
 //   node scripts/check.js            (outputs/의 hwpx 전부)
 // 끝나는 코드: 0 통과 / 1 실패
 const fs = require("fs");
 const path = require("path");
-const { read, ROOT } = require("./hwpx.js");
+const { read, ROOT, safeName } = require("./hwpx.js");
 const { calc, won, totalLine } = require("./calc.js");
 
 const num = (s) => Number(String(s || "").replace(/[^0-9]/g, "")) || 0;
@@ -52,23 +52,41 @@ function company() {
   return c;
 }
 
-function quoteTotal(code) {
-  const p = path.join(ROOT, "outputs", `quote_${code}.hwpx`);
-  if (!fs.existsSync(p)) return null;
+// 결과 파일 이름(견적서_바다상사.hwpx)으로 요청 기록 찾기. 비교는 모두 NFC
+function requestByCustomer(part) {
+  const dir = path.join(ROOT, "outputs", "_requests");
+  if (!fs.existsSync(dir)) return null;
+  for (const n of fs.readdirSync(dir).filter((x) => x.endsWith(".json"))) {
+    const r = JSON.parse(fs.readFileSync(path.join(dir, n), "utf8"));
+    if (safeName(r.customer) === part.normalize("NFC")) return { ...r, code: r.code || n.replace(/\.json$/, "") };
+  }
+  return null;
+}
+
+function quoteFile(code, req) {
+  const cands = [req && req.outputs && req.outputs.quote, req && `outputs/견적서_${safeName(req.customer)}.hwpx`, `outputs/quote_${code}.hwpx`].filter(Boolean);
+  return cands.map((c) => path.join(ROOT, c.normalize("NFC"))).find((p) => fs.existsSync(p)) || null;
+}
+
+function quoteTotal(code, req) {
+  const p = quoteFile(code, req);
+  if (!p) return null;
   return num(fields(tables(read(p)))["합계"]);
 }
 
 function check(file) {
   const name = path.basename(file).normalize("NFC");
-  const m = name.match(/^(quote|sow)_([a-z0-9-]+)\.hwpx$/);
-  if (!m) return [`파일 이름 규칙 위반: ${name} → quote|sow_고객코드.hwpx`];
-  const [, doc, code] = m;
+  const m = name.match(/^(견적서|과업지시서|quote|sow)_(.+)\.hwpx$/);
+  if (!m) return [`파일 이름 규칙 위반: ${name} → 견적서_고객사.hwpx 또는 과업지시서_고객사.hwpx`];
+  const doc = { 견적서: "quote", 과업지시서: "sow" }[m[1]] || m[1];
+  const byName = /^[a-z0-9-]+$/.test(m[2]) ? null : requestByCustomer(m[2]);
+  const code = byName ? byName.code : m[2];
   const md = read(file);
   const tbls = tables(md);
   const f = fields(tbls);
   const errs = [];
-  const req = requestFor(code);
-  if (!req) errs.push(`확정된 요청 기록 outputs/_requests/${code}.json이 없습니다. 사용자에게 받은 값을 먼저 저장하세요.`);
+  const req = byName || requestFor(code);
+  if (!req) errs.push(`이 파일(${name})의 확정된 요청 기록(outputs/_requests/*.json)이 없습니다. 사용자에게 받은 값을 먼저 저장하세요.`);
   const same = (label, got, want) => { if (req && want && got !== want) errs.push(`${label} "${got || ""}" → 요청 기록은 "${want}"`); };
   if (doc === "quote") {
     same("고객사", f["고객사"], req && req.customer);
@@ -121,9 +139,9 @@ function check(file) {
     if (req && !item("과업명").includes(req.service)) errs.push(`(과업명) "${item("과업명")}" → 요청 기록 건명 "${req.service}"`);
     if (req && !item("발주처").includes(req.customer)) errs.push(`(발주처) "${item("발주처")}" → 요청 기록 고객사 "${req.customer}"`);
     if (co["상호"] && !item("수행기관").includes(co["상호"])) errs.push(`(수행기관) "${item("수행기관")}" → data/company.md 상호 "${co["상호"]}"`);
-    const qt = quoteTotal(code);
+    const qt = quoteTotal(code, req);
     const amt = num((item("과업 금액").match(/₩\s*([\d,]+)/) || [])[1]);
-    if (qt === null) errs.push(`견적서 outputs/quote_${code}.hwpx가 없어 과업 금액을 대조할 수 없습니다.`);
+    if (qt === null) errs.push(`견적서(outputs/견적서_${req ? safeName(req.customer) : code}.hwpx)가 없어 과업 금액을 대조할 수 없습니다.`);
     else if (amt !== qt) errs.push(`(과업 금액) ₩${won(amt)} → 견적서 합계 ₩${won(qt)}`);
     // 과업별 분량
     const blocks = md.split(/\n[□ㅇ]?\s*과업 \d+\.[^\n]*/).slice(1).map((blk) => blk.split("\n## ")[0]);

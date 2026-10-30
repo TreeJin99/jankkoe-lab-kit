@@ -24,9 +24,9 @@
           "from": ".claude/skills/sow/evals/fixtures/quote_badasangsa.md"
         }
       ],
-      "expected_output": "outputs/sow_badasangsa.hwpx가 생기고 선례 구조(표지 · 목차 · 1. 위탁회사 · 2. 과업 내용 · 3~5)와 분량 기준을 채움, 과업 금액 = 견적서 합계 5,445,000원, doc-writer 작성 뒤 reviewer 검수",
+      "expected_output": "outputs/과업지시서_바다상사.hwpx가 생기고 선례 구조(표지 · 목차 · 1. 위탁회사 · 2. 과업 내용 · 3~5)와 분량 기준을 채움, 과업 금액 = 견적서 합계 5,445,000원, doc-writer 작성 뒤 reviewer 검수",
       "expectations": [
-        "outputs/sow_badasangsa.hwpx가 생성되고 check.js 검산(구조·분량 포함)을 통과함",
+        "outputs/과업지시서_바다상사.hwpx가 생성되고 check.js 검산(구조·분량 포함)을 통과함",
         "(과업 금액)에 ₩5,445,000이 있음",
         "위탁회사 현황에 새벽웹스튜디오가 있음",
         "하자보수에 '3개월'이 있음",
@@ -37,7 +37,7 @@
         "이미 준 시작일을 다시 물음"
       ],
       "checks": {
-        "file": "outputs/sow_badasangsa.hwpx",
+        "file": "outputs/과업지시서_바다상사.hwpx",
         "check_pass": true,
         "contains": [
           "5,445,000",
@@ -69,14 +69,14 @@
       ],
       "expected_output": "견적서가 없으므로 만들지 않고 '먼저 견적서를 만들까요?'라고 물음",
       "expectations": [
-        "outputs/sow_*.hwpx가 생기지 않음",
+        "outputs/과업지시서_*.hwpx가 생기지 않음",
         "답에 '견적서'가 있음"
       ],
       "fail_if": [
         "견적서 없이 과업지시서를 만듦"
       ],
       "checks": {
-        "no_file_glob": "outputs/sow_",
+        "no_file_glob": "outputs/과업지시서_",
         "answer_contains": [
           "견적서"
         ]

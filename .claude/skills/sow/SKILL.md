@@ -10,7 +10,7 @@ allowed-tools: Read Glob Grep Edit Write Agent AskUserQuestion Bash(node scripts
 **쓸 때**: 만들어 둔 견적서로 과업지시서를 만들 때. **안 쓸 때**: 견적서를 만들 때(→ quote).
 
 대상: $ARGUMENTS
-(비어 있으면 `outputs/`에서 가장 최근에 저장된 `quote_{고객코드}.hwpx`)
+(비어 있으면 `outputs/`에서 가장 최근에 저장된 `견적서_{고객사}.hwpx`. 고객코드는 요청 기록 outputs/_requests/에서)
 
 **견적서가 없으면**: 아무것도 만들지 말고 "견적서가 없어 과업지시서를 만들 수 없습니다. 먼저 견적서를 만들까요?"라고 묻고 멈춘다.
 

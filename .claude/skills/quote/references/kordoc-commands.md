@@ -6,9 +6,9 @@
 |---|---|
 | 금액 계산 | `node scripts/calc.js outputs/_requests/{고객코드}.json` |
 | 양식을 원고로 꺼내기 | `node scripts/hwpx.js draft quote {고객코드}` → `outputs/_draft/quote_{고객코드}.md` |
-| 원고를 양식에 넣어 저장 | `node scripts/hwpx.js fill quote {고객코드}` → `outputs/quote_{고객코드}.hwpx` |
+| 원고를 양식에 넣어 저장 | `node scripts/hwpx.js fill quote {고객코드}` → `outputs/견적서_{고객사}.hwpx` |
 | hwpx 내용 읽기 | `node scripts/hwpx.js read outputs/파일.hwpx` |
-| 검산만 따로 | `node scripts/check.js outputs/quote_{고객코드}.hwpx` |
+| 검산만 따로 | `node scripts/check.js outputs/견적서_{고객사}.hwpx` |
 | 원고 지우기 | `node scripts/hwpx.js clean` |
 
 | 이런 말이 나오면 | 이렇게 |
