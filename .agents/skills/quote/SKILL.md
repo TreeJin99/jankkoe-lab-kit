@@ -10,7 +10,7 @@ allowed-tools: Read Glob Grep Edit Write Agent AskUserQuestion Bash(node scripts
 
 사용자가 이미 준 내용: $ARGUMENTS
 
-## 0. 먼저 이렇게 말한다 (3줄)
+## 0. 가장 먼저(도구를 쓰기 전에) 이 3줄을 한국어로 말한다
 > ① 회사 규칙(CLAUDE.md)을 읽었고 ② 견적 매뉴얼(quote 스킬)로 ③ 정보 확인 → 견적 담당(quote-writer) 작성 → 검수 담당(reviewer) 확인 순서로 진행합니다.
 
 ## 1. 회사 정보 확인 (메인 대화)

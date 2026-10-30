@@ -14,7 +14,7 @@ allowed-tools: Read Glob Grep Edit Write Agent AskUserQuestion Bash(node scripts
 
 **견적서가 없으면**: 아무것도 만들지 말고 "견적서가 없어 과업지시서를 만들 수 없습니다. 먼저 견적서를 만들까요?"라고 묻고 멈춘다.
 
-## 0. 먼저 이렇게 말한다 (3줄)
+## 0. 가장 먼저(도구를 쓰기 전에) 이 3줄을 한국어로 말한다
 > ① 회사 규칙(CLAUDE.md)을 읽었고 ② 과업지시서 매뉴얼(sow 스킬)로 ③ 견적서 이어받기 → 문서 담당(doc-writer) 작성 → 검수 담당(reviewer) 확인 순서로 진행합니다.
 
 ## 1. 이어받고 빠진 것만 묻기 (메인 대화)
