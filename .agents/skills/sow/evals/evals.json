@@ -4,30 +4,28 @@
     {
       "id": 1,
       "type": "positive",
-      "prompt": "방금 견적서로 과업지시서 만들어줘",
-      "files": [{"fill": "quote", "code": "badasangsa", "from": ".claude/skills/sow/evals/fixtures/quote_badasangsa.md"}],
-      "expected_output": "outputs/sow_badasangsa.hwpx가 생기고 계약금액이 견적서 합계 5,445,000원과 같음, doc-writer 작성 뒤 reviewer 검수",
+      "prompt": "방금 견적서로 과업지시서 만들어줘. 시작일은 오늘, 산출물 추가는 없어. 다시 묻지 말고 진행해줘.",
+      "files": [{"from": "examples/saebyeok/company.md", "to": "data/company.md"}, {"from": "examples/saebyeok/prices.md", "to": "data/prices.md"},
+        {"from": ".claude/skills/sow/evals/fixtures/request_badasangsa.json", "to": "outputs/_requests/badasangsa.json"},
+        {"fill": "quote", "code": "badasangsa", "from": ".claude/skills/sow/evals/fixtures/quote_badasangsa.md"}],
+      "expected_output": "outputs/sow_badasangsa.hwpx가 생기고 계약금액이 견적서 합계 5,445,000원과 같음, 하자보수는 company.md 계약 조건, doc-writer 작성 뒤 reviewer 검수",
       "expectations": [
-        "outputs/sow_badasangsa.hwpx가 생성됨",
-        "scripts/check.js 검산을 통과함",
-        "계약금액이 5,445,000원임",
-        "발주처가 '바다상사'임",
+        "outputs/sow_badasangsa.hwpx가 생성되고 check.js 검산을 통과함",
+        "계약금액이 5,445,000원, 발주처가 '바다상사', 수행사가 '새벽웹스튜디오'임",
+        "하자보수 칸에 '3개월'이 있음",
         "doc-writer 서브에이전트가 reviewer보다 먼저 호출됨"
       ],
-      "fail_if": ["계약금액이 견적서 합계와 다름", "하자보수 칸이 '확인 필요'로 남음"],
-      "checks": {"file": "outputs/sow_badasangsa.hwpx", "check_pass": true, "field": {"계약금액": 5445000, "발주처": "바다상사"}, "contains": ["3개월 무상"], "agents": ["doc-writer", "reviewer"]}
+      "fail_if": ["계약금액이 견적서 합계와 다름", "이미 준 시작일을 다시 물음"],
+      "checks": {"file": "outputs/sow_badasangsa.hwpx", "check_pass": true, "field": {"계약금액": 5445000, "발주처": "바다상사", "수행사": "새벽웹스튜디오"}, "contains": ["3개월"], "agents": ["doc-writer", "reviewer"]}
     },
     {
       "id": 2,
       "type": "edge",
       "prompt": "과업지시서 만들어줘",
-      "files": [],
-      "expected_output": "견적서가 없으므로 과업지시서를 만들지 않고 견적서부터 만들라고 안내함",
-      "expectations": [
-        "outputs/sow_*.hwpx가 생기지 않음",
-        "답에 '견적서'를 먼저 만들라는 안내가 있음"
-      ],
-      "fail_if": ["견적서 없이 금액을 지어내 과업지시서를 만듦"],
+      "files": [{"from": "examples/saebyeok/company.md", "to": "data/company.md"}, {"from": "examples/saebyeok/prices.md", "to": "data/prices.md"}],
+      "expected_output": "견적서가 없으므로 만들지 않고 '먼저 견적서를 만들까요?'라고 물음",
+      "expectations": ["outputs/sow_*.hwpx가 생기지 않음", "답에 '견적서'가 있음"],
+      "fail_if": ["견적서 없이 과업지시서를 만듦"],
       "checks": {"no_file_glob": "outputs/sow_", "answer_contains": ["견적서"]}
     },
     {

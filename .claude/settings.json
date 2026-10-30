@@ -4,11 +4,15 @@
     "allow": [
       "Skill",
       "Agent",
+      "AskUserQuestion",
       "Bash(node scripts/*)",
       "Bash(node */scripts/*)",
       "Bash(npx -y kordoc *)",
       "Bash(kordoc *)",
-      "Edit(/outputs/**)"
+      "Bash(cp examples/*)",
+      "Edit(/outputs/**)",
+      "Edit(/data/company.md)",
+      "Edit(/data/prices.md)"
     ],
     "deny": [
       "Bash(rm -rf *)",

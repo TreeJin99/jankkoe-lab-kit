@@ -1,8 +1,8 @@
 [
-  {"query": "받은 메일로 견적서 만들어줘", "should_trigger": true},
-  {"query": "이 메일로 견적 내줘", "should_trigger": true},
-  {"query": "바다상사 견적서 뽑아줘", "should_trigger": true},
-  {"query": "inbox에 온 문의로 견적서 작성해줘", "should_trigger": true},
+  {"query": "견적서 만들어줘", "should_trigger": true},
+  {"query": "바다상사 견적 내줘", "should_trigger": true},
+  {"query": "홈페이지 리뉴얼 견적서 뽑아줘", "should_trigger": true},
+  {"query": "새 고객 견적서 작성해줘", "should_trigger": true},
   {"query": "방금 견적서로 과업지시서 만들어줘", "should_trigger": false},
   {"query": "부가세는 몇 퍼센트야?", "should_trigger": false},
   {"query": "단가표에 SNS 연동 품목 추가해줘", "should_trigger": false},

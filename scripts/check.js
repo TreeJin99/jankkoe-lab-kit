@@ -1,11 +1,12 @@
 // outputs/의 hwpx를 읽어 검산한다. 틀리면 이유를 줄마다 하나씩 알려 준다.
+// 대조 기준: 확정된 요청 기록 outputs/_requests/{고객코드}.json · 회사 정보 data/company.md
 //   node scripts/check.js outputs/quote_badasangsa.hwpx
 //   node scripts/check.js            (outputs/의 hwpx 전부)
 // 끝나는 코드: 0 통과 / 1 실패
 const fs = require("fs");
 const path = require("path");
 const { read, ROOT } = require("./hwpx.js");
-const { loadPrices, won } = require("./calc.js");
+const { calc, won } = require("./calc.js");
 
 const num = (s) => Number(String(s || "").replace(/[^0-9]/g, "")) || 0;
 const DATE = /^\d{4}\. \d{1,2}\. \d{1,2}\.$/;
@@ -34,10 +35,21 @@ function fields(tbls) {
   return f;
 }
 
-function mailFor(code) {
-  const dir = path.join(ROOT, "inbox");
-  const hit = fs.readdirSync(dir).map((n) => n.normalize("NFC")).find((n) => n.endsWith(`_${code}.txt`));
-  return hit ? fs.readFileSync(path.join(dir, hit), "utf8") : null;
+function requestFor(code) {
+  const p = path.join(ROOT, "outputs", "_requests", `${code}.json`);
+  return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8")) : null;
+}
+
+// data/company.md 표를 { 항목: 값 }으로
+function company() {
+  const p = path.join(ROOT, "data", "company.md");
+  const c = {};
+  if (!fs.existsSync(p)) return c;
+  for (const line of fs.readFileSync(p, "utf8").split("\n")) {
+    const m = line.match(/^\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|$/);
+    if (m && m[1] !== "항목" && !/^-+$/.test(m[1])) c[m[1]] = m[2];
+  }
+  return c;
 }
 
 function quoteTotal(code) {
@@ -55,30 +67,36 @@ function check(file) {
   const tbls = tables(md);
   const f = fields(tbls);
   const errs = [];
-  const mail = mailFor(code);
-  if (!mail) errs.push(`inbox/에 고객코드 ${code}의 메일(…_${code}.txt)이 없습니다.`);
-
-  const customer = f["고객사"] || f["발주처"];
-  if (!customer) errs.push("고객사(발주처) 칸이 비어 있습니다.");
-  else if (mail && !mail.includes(customer)) errs.push(`고객사 "${customer}"가 메일에 적힌 글자와 다릅니다.`);
-  const person = f["담당자"] || "";
-  if (mail && person) for (const w of person.split(/\s+/)) {
-    if (!mail.includes(w)) errs.push(`담당자 "${person}" 중 "${w}"가 메일에 없습니다.`);
-  }
+  const req = requestFor(code);
+  if (!req) errs.push(`확정된 요청 기록 outputs/_requests/${code}.json이 없습니다. 사용자에게 받은 값을 먼저 저장하세요.`);
+  const same = (label, got, want) => { if (req && want && got !== want) errs.push(`${label} "${got || ""}" → 요청 기록은 "${want}"`); };
+  same(doc === "quote" ? "고객사" : "발주처", f["고객사"] || f["발주처"], req && req.customer);
+  same("담당자", f["담당자"], req && req.contact);
+  same(doc === "quote" ? "용역명" : "과업명", f["용역명"] || f["과업명"], req && req.service);
+  const co = company();
+  if (doc === "quote" && co["상호"] && f["상호"] !== co["상호"]) errs.push(`상호 "${f["상호"] || ""}" → data/company.md는 "${co["상호"]}"`);
+  if (doc === "sow" && co["상호"] && f["수행사"] !== co["상호"]) errs.push(`수행사 "${f["수행사"] || ""}" → data/company.md는 "${co["상호"]}"`);
   for (const k of ["견적일자", "작성일"]) if (k in f && !DATE.test(f[k])) errs.push(`${k} "${f[k]}"는 2026. 10. 30. 모양이어야 합니다.`);
   if (/\d{6}-[1-4]\d{6}/.test(md)) errs.push("주민등록번호로 보이는 숫자가 있습니다.");
 
   if (doc === "quote") {
-    const prices = Object.values(loadPrices());
     const items = (tbls.find((t) => t[0][0] === "No" && t[0][1] === "품목") || []).slice(1).filter((r) => r[1]);
     if (!items.length) errs.push("품목이 하나도 없습니다.");
     let sum = 0;
     for (const [no, item, , qty, price, amount] of items) {
-      const p = prices.find((x) => x.name === item);
-      if (!p) { errs.push(`${no}번 "${item}"은 단가표에 없는 품목입니다. 품목 칸 대신 비고에 "단가 확인 필요"로 적으세요.`); continue; }
-      if (num(price) !== p.price) errs.push(`${no}번 ${item} 단가 ${price} → 단가표는 ${won(p.price)}`);
       if (num(amount) !== num(price) * num(qty)) errs.push(`${no}번 ${item} 금액 ${amount} → 단가×수량 = ${won(num(price) * num(qty))}`);
       sum += num(amount);
+    }
+    if (req) {
+      let want;
+      try { want = calc(req.items); } catch (e) { errs.push(e.message); }
+      if (want) {
+        if (items.length !== want.rows.length) errs.push(`품목 ${items.length}줄 → 요청 기록은 ${want.rows.length}줄`);
+        want.rows.forEach((w, i) => {
+          const r = items[i];
+          if (r && (r[1] !== w.name || num(r[3]) !== w.qty || num(r[4]) !== w.price)) errs.push(`${i + 1}번 "${r[1]} ${r[3]} × ${r[4]}" → 요청 기록은 "${w.name} ${w.qty} × ${won(w.price)}"`);
+        });
+      }
     }
     const supply = num(f["공급가액"]), vat = num(f["부가세(10%)"]), total = num(f["합계"]);
     if (supply !== sum) errs.push(`공급가액 ${won(supply)} → 품목 금액 합 ${won(sum)}`);

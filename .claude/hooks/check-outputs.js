@@ -14,7 +14,13 @@ if (!fs.existsSync(dir)) process.exit(0);
 const id = crypto.createHash("md5").update(root).digest("hex").slice(0, 12);
 const memo = path.join(os.tmpdir(), `kit-check-${id}.json`);
 let seen = {};
-try { seen = JSON.parse(fs.readFileSync(memo, "utf8")); } catch {}
+try { seen = JSON.parse(fs.readFileSync(memo, "utf8")); } catch {
+  // 처음 도는 폴더: 2분 전보다 오래된 파일은 예전 결과물로 보고 건너뛴다.
+  for (const n of fs.readdirSync(dir).filter((x) => x.endsWith(".hwpx"))) {
+    const t = fs.statSync(path.join(dir, n)).mtimeMs;
+    if (Date.now() - t > 120000) seen[n] = t;
+  }
+}
 
 const todo = fs.readdirSync(dir)
   .filter((n) => n.endsWith(".hwpx"))
