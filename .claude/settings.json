@@ -1,4 +1,23 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Skill",
+      "Agent",
+      "Bash(node scripts/*)",
+      "Bash(npx -y kordoc *)",
+      "Bash(kordoc *)",
+      "Edit(/outputs/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push *)",
+      "Bash(curl *)",
+      "Bash(sudo *)",
+      "Edit(/templates/**)",
+      "Edit(/.claude/settings.json)"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -6,7 +25,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-result.js\"",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/check-outputs.js"
+            ],
             "timeout": 120
           }
         ]

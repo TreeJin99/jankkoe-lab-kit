@@ -1,6 +1,6 @@
 # 실습 결과물은 올리지 않는다
-결과/*
-!결과/.gitkeep
+outputs/*
+!outputs/.gitkeep
 
 .DS_Store
 Thumbs.db
