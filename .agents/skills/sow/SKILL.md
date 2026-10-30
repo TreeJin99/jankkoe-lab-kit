@@ -1,6 +1,6 @@
 ---
 name: sow
-description: outputs/의 견적서를 이어받아 빠진 것만 물은 뒤 과업지시서 hwpx를 만든다. "과업지시서 만들어줘", "방금 견적서로 과업지시서", "과업지시서" 요청에 사용.
+description: outputs/의 견적서를 이어받아 빠진 것만 물은 뒤 목차 · 과업 개요 · 과업별 산출물 · 일정 · 검수가 있는 과업지시서 hwpx를 만든다. "과업지시서 만들어줘", "방금 견적서로 과업지시서", "과업지시서" 요청에 사용.
 allowed-tools: Read Glob Grep Edit Write Agent AskUserQuestion Bash(node scripts/*) Bash(node */scripts/*)
 ---
 
@@ -17,14 +17,14 @@ allowed-tools: Read Glob Grep Edit Write Agent AskUserQuestion Bash(node scripts
 > ① 회사 규칙(CLAUDE.md)을 읽었고 ② 과업지시서 매뉴얼(sow 스킬)로 ③ 견적서 이어받기 → 문서 담당(doc-writer) 작성 → 검수 담당(reviewer) 확인 순서로 진행합니다.
 
 ## 1. 이어받고 빠진 것만 묻기 (메인 대화)
-- 견적서·요청 기록(`outputs/_requests/{고객코드}.json`)에서 고객사 · 담당자 · 용역명 · 품목 · 합계 · 오픈 희망일을 가져온다.
-- AskUserQuestion으로 빠진 것만 묻는다: 과업 시작일(오늘 / 계약일 / 직접 입력) · 산출물 추가(없음 / 직접 입력) · 오픈일이 "미정"이면 오픈일.
+- 견적서·요청 기록(`outputs/_requests/{고객코드}.json`)에서 고객사 · 담당자 · 건명 · 품목 · 합계 · 납기을 가져온다.
+- AskUserQuestion으로 빠진 것만 묻는다: 착수일(오늘 / 계약일 / 직접 입력) · 산출물 추가(없음 / 직접 입력) · 납기가 "미정"이면 납기.
 - 수정 횟수·하자보수는 `data/company.md`의 계약 조건을 쓴다. 비어 있으면 묻고, company.md에 저장할지 확인한다.
 - 받은 값은 요청 기록에 `sow` 항목으로 덧붙인다(`{"start": "2026. 10. 30.", "deliverables": [...]}`).
 
 ## 2. 맡기기
 - 메인 대화는 `doc-writer`에게 고객코드를 주고 작성을 맡긴다 → 받은 경로로 `reviewer`에게 검수를 맡긴다. 질문은 메인만 한다.
-- **doc-writer 작성 단계**: ① `node scripts/hwpx.js read outputs/quote_{고객코드}.hwpx` ② `node scripts/hwpx.js draft sow {고객코드}` ③ 원고 빈칸 채우기([references/template-fields.md](references/template-fields.md)) ④ `node scripts/hwpx.js fill sow {고객코드}`. 자동 검산이 틀렸다고 하면 고쳐서 다시 fill, 통과하면 `node scripts/hwpx.js clean`. 명령·오류는 [references/kordoc-commands.md](references/kordoc-commands.md).
+- **doc-writer 작성 단계**: ① `node scripts/hwpx.js read outputs/quote_{고객코드}.hwpx` ② `node scripts/hwpx.js draft sow {고객코드}`로 목차·과업 틀 받기 ③ 품목을 과업으로 묶어([references/task-mapping.md](references/task-mapping.md)) ( ) 자리 채우기([references/template-fields.md](references/template-fields.md)). 과업마다 목적·범위·요구사항·주 산출물(예시), 착수일~납기 주차표 ④ `node scripts/hwpx.js fill sow {고객코드}` (견본 서식으로 새로 생성). 자동 검산이 틀렸다고 하면 고쳐서 다시 fill, 통과하면 `node scripts/hwpx.js clean`. 명령·오류는 [references/kordoc-commands.md](references/kordoc-commands.md).
 
 ## 3. 끝 보고 (3줄 + 파일)
 > 읽은 파일: CLAUDE.md · data/company.md · 견적서 · 요청 기록

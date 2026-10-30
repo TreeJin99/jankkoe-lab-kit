@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 const { read, ROOT } = require("./hwpx.js");
-const { calc, won } = require("./calc.js");
+const { calc, won, totalLine } = require("./calc.js");
 
 const num = (s) => Number(String(s || "").replace(/[^0-9]/g, "")) || 0;
 const DATE = /^\d{4}\. \d{1,2}\. \d{1,2}\.$/;
@@ -72,7 +72,8 @@ function check(file) {
   const same = (label, got, want) => { if (req && want && got !== want) errs.push(`${label} "${got || ""}" → 요청 기록은 "${want}"`); };
   same(doc === "quote" ? "고객사" : "발주처", f["고객사"] || f["발주처"], req && req.customer);
   same("담당자", f["담당자"], req && req.contact);
-  same(doc === "quote" ? "용역명" : "과업명", f["용역명"] || f["과업명"], req && req.service);
+  same(doc === "quote" ? "건명" : "과업명", f["건명"] || f["과업명"], req && req.service);
+  if (doc === "quote" && req && !md.includes(`${req.customer} 귀하`)) errs.push(`제목 아래 "${req.customer} 귀하" 줄이 없습니다.`);
   const co = company();
   if (doc === "quote" && co["상호"] && f["상호"] !== co["상호"]) errs.push(`상호 "${f["상호"] || ""}" → data/company.md는 "${co["상호"]}"`);
   if (doc === "sow" && co["상호"] && f["수행사"] !== co["상호"]) errs.push(`수행사 "${f["수행사"] || ""}" → data/company.md는 "${co["상호"]}"`);
@@ -102,7 +103,16 @@ function check(file) {
     if (supply !== sum) errs.push(`공급가액 ${won(supply)} → 품목 금액 합 ${won(sum)}`);
     if (vat !== Math.floor(supply * 0.1)) errs.push(`부가세 ${won(vat)} → 공급가액의 10% = ${won(Math.floor(supply * 0.1))}`);
     if (total !== supply + vat) errs.push(`합계 ${won(total)} → 공급가액 + 부가세 = ${won(supply + vat)}`);
+    if ((f["합계금액"] || "") !== totalLine(supply + vat)) errs.push(`합계금액 "${f["합계금액"] || ""}" → "${totalLine(supply + vat)}"`);
   } else {
+    const tasks = md.match(/과업 \d+\./g) ? [...new Set(md.split("\n").filter((l) => /^□?\s*과업 \d+\./.test(l.trim())))] : [];
+    if (!tasks.length) errs.push("과업 내용에 '과업 1.' 같은 과업이 하나도 없습니다.");
+    const blocks = md.split(/\n□?\s*과업 \d+\./).slice(1);
+    blocks.forEach((blk, i) => {
+      const t = tables(blk.split("\n## ")[0]).find((x) => (x[0][0] || "").startsWith("주 산출물"));
+      if (!t || !t.slice(1).some((r) => r[0])) errs.push(`과업 ${i + 1}에 주 산출물(예시)이 없습니다.`);
+    });
+    if (/\((건명|고객사|과업 이름|한 줄|산출물|형태)\)/.test(md)) errs.push("채우지 않은 ( ) 자리가 남아 있습니다.");
     const qt = quoteTotal(code);
     const contract = num(f["계약금액"]);
     if (qt === null) errs.push(`견적서 outputs/quote_${code}.hwpx가 없어 계약금액을 대조할 수 없습니다.`);

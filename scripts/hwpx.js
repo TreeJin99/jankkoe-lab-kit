@@ -1,6 +1,7 @@
 // 한글 양식(hwpx) 다루기. kordoc 하나만 쓴다. 맥·윈도우 공통.
-//   node scripts/hwpx.js draft <quote|sow> <고객코드>   양식을 원고(md)로 꺼냄 → outputs/_draft/
-//   node scripts/hwpx.js fill  <quote|sow> <고객코드>   원고를 양식에 넣어 outputs/에 저장
+//   node scripts/hwpx.js draft <quote|sow> <고객코드>   원고(md)를 outputs/_draft/에 만든다
+//                                                     quote = 양식 빈칸 원고, sow = 목차·과업 틀(templates/sow-outline.md)
+//   node scripts/hwpx.js fill  <quote|sow> <고객코드>   quote = 원고를 양식에 채움(patch), sow = 원고로 새로 생성(generate, 견본 templates/sow.hwpx)
 //   node scripts/hwpx.js read  <파일.hwpx>                    내용을 읽어 화면에 출력
 //   node scripts/hwpx.js clean                               outputs/_draft/ 원고 삭제
 const fs = require("fs");
@@ -40,7 +41,21 @@ function paths(doc, code) {
 
 function main() {
   const [cmd, a, b] = process.argv.slice(2);
-  if (cmd === "draft") {
+  if (cmd === "draft" && a === "sow") {
+    const p = paths(a, b);
+    fs.mkdirSync(DRAFT_DIR, { recursive: true });
+    fs.copyFileSync(path.join(ROOT, "templates", "sow-outline.md"), p.draft);
+    console.log(`원고: ${path.relative(ROOT, p.draft)}\n괄호 ( ) 자리를 채우고, 과업 블록(### 과업 N.)과 일정 줄은 과업 수만큼 늘리세요.\n`);
+    console.log(fs.readFileSync(p.draft, "utf8"));
+  } else if (cmd === "fill" && a === "sow") {
+    const p = paths(a, b);
+    if (!fs.existsSync(p.draft)) throw new Error(`원고가 없습니다. 먼저 draft: ${path.relative(ROOT, p.draft)}`);
+    const left = (fs.readFileSync(p.draft, "utf8").match(/\((건명|작성일|고객사|담당자|상호|대표|착수일|납기|견적서 합계|과업 이름|한 줄|산출물|형태|계약 조건 또는 확인 필요|없음)\)/g) || []);
+    if (left.length) { console.log(`아직 안 채운 자리 ${left.length}곳: ${[...new Set(left)].join(" ")}`); process.exit(2); }
+    const r = kordoc(["generate", p.draft, "-o", p.output, "--template", p.template, "--silent"]);
+    if (r.code !== 0 || !fs.existsSync(p.output)) throw new Error(`생성 실패\n${r.out}${r.err}`);
+    console.log(`저장: ${path.relative(ROOT, p.output)} (과업지시서, 견본 서식으로 생성)`);
+  } else if (cmd === "draft") {
     const p = paths(a, b);
     fs.mkdirSync(DRAFT_DIR, { recursive: true });
     const r = kordoc([p.template, "--keep-layout-tables", "--keep-empty-cols", "--silent", "-o", p.draft]);

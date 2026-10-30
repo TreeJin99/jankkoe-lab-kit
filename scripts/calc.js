@@ -1,7 +1,7 @@
 // 견적 금액 계산. 확정된 요청 기록(outputs/_requests/{고객코드}.json)의 품목으로 계산한다.
 //   node scripts/calc.js outputs/_requests/badasangsa.json
 // 품목 단가는 기록에 적힌 값. 단가표(data/prices.md)에 같은 품목이 있으면 단가가 같은지도 확인한다.
-// 출력: 견적서 품목 표에 그대로 옮길 줄 + 공급가액·부가세·합계
+// 출력: 견적서 품목 표에 그대로 옮길 줄 + 공급가액·부가세·합계 + 합계금액(한글)
 const fs = require("fs");
 const path = require("path");
 
@@ -44,7 +44,26 @@ function calc(items) {
   return { rows, supply, vat, total: supply + vat };
 }
 
-module.exports = { loadPrices, loadRequest, calc, won };
+// 금액을 한글로: 5445000 → "오백사십사만오천"
+function hangul(n) {
+  const D = ["", "일", "이", "삼", "사", "오", "육", "칠", "팔", "구"], S = ["", "십", "백", "천"], B = ["", "만", "억", "조"];
+  if (!n) return "영";
+  let out = "";
+  for (let g = 0; n > 0; g++, n = Math.floor(n / 10000)) {
+    const part = n % 10000;
+    if (!part) continue;
+    let s = "";
+    for (let i = 3; i >= 0; i--) {
+      const d = Math.floor(part / 10 ** i) % 10;
+      if (d) s += (d === 1 && i > 0 ? "" : D[d]) + S[i];
+    }
+    out = s + B[g] + out;
+  }
+  return out;
+}
+const totalLine = (total) => `일금 ${hangul(total)}원정 (₩${won(total)}, 부가세 포함)`;
+
+module.exports = { loadPrices, loadRequest, calc, won, hangul, totalLine };
 
 if (require.main === module) {
   try {
@@ -53,7 +72,7 @@ if (require.main === module) {
     const r = calc(loadRequest(file).items);
     console.log("| No | 품목 | 단위 | 수량 | 단가 | 금액 |");
     r.rows.forEach((x, i) => console.log(`| ${i + 1} | ${x.name} | ${x.unit} | ${x.qty} | ${won(x.price)} | ${won(x.amount)} |`));
-    console.log(`\n공급가액 ${won(r.supply)}원\n부가세(10%) ${won(r.vat)}원\n합계 ${won(r.total)}원`);
+    console.log(`\n공급가액 ${won(r.supply)}원\n부가세(10%) ${won(r.vat)}원\n합계 ${won(r.total)}원\n합계금액 ${totalLine(r.total)}`);
   } catch (e) {
     console.error(e.message);
     process.exit(1);
