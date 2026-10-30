@@ -122,6 +122,7 @@ function check(file) {
       if (!t || !t.slice(1).some((r) => r[0])) errs.push(`과업 ${i + 1}에 주 산출물(예시)이 없습니다.`);
       const rq = tb.find((x) => x[0][1] === "요구사항");
       if (!rq || rq.slice(1).filter((r) => r[1]).length < 4) errs.push(`과업 ${i + 1}의 요구사항이 4개보다 적습니다.`);
+      if (!blk.split("\n## ")[0].includes("예시 이미지")) errs.push(`과업 ${i + 1}에 산출물 예시 그림 캡션("예시 이미지 · …")이 없습니다.`);
     });
     const insp = tables(md).find((x) => x[0][1] === "검수 항목");
     if (!insp || insp.slice(1).filter((r) => r[1]).length < 3) errs.push("검수 항목이 3개보다 적습니다.");

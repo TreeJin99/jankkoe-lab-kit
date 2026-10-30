@@ -17,3 +17,6 @@ templates/custom/*
 !outputs/_requests/
 outputs/_requests/*
 !outputs/_requests/.gitkeep
+data/참고이미지/*
+!data/참고이미지/.gitkeep
+!data/참고이미지/README.md
