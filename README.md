@@ -115,18 +115,14 @@ templates/quote.hwpx 양식이 바뀌었어. 견적서 레시피의 칸 채우�
 3. **팀**(에이전트)에게 나눠 맡깁니다. 견적 담당이 쓰고 검수 담당이 확인합니다.
 4. 파일이 저장되면 **자동 검산**(훅)이 요청 기록과 대조하고, 틀리면 고칠 때까지 다시 합니다.
 
-**ChatGPT Codex에서 쓰기**
-같은 폴더를 Codex로 열면 `AGENTS.md`와 `.agents/skills/`를 읽습니다. 레시피는 `$quote` · `$sow`로 부릅니다.
 
 ## 6. 폴더 안에 있는 것
 
 | 하네스 요소 | 위치 | 하는 일 |
 |---|---|---|
 | 회사 규칙 | `CLAUDE.md` | AI가 일하기 전에 먼저 읽는 규칙 (모르면 묻기, 부가세 별도, 파일 이름, 금지 정보) |
-| 회사 규칙 (Codex용) | `AGENTS.md` | `CLAUDE.md`와 같은 내용 |
 | 룰 | `.claude/rules/templates.md` | `templates/`·`outputs/` 파일을 만질 때만 읽는 한글 양식 규칙 |
 | 레시피 (스킬) | `.claude/skills/quote · sow` | 문서별 작성 단계와 위임 순서. 세부는 `references/`, 시험은 `evals/` |
-| 레시피 (Codex용) | `.agents/skills/` | 같은 내용 |
 | 팀 (에이전트) | `.claude/agents/` | quote-writer 견적담당 · doc-writer 문서담당 · reviewer 검수담당 |
 | 자동 검산 (훅) | `.claude/hooks/check-outputs.js` | `outputs/`에 hwpx가 저장되면 바로 검산. 틀리면 AI에게 돌려보내 고치게 함 |
 | 권한 · 훅 설정 | `.claude/settings.json` | 실습 명령은 묻지 않고 실행, 위험한 명령(`rm -rf` 등)은 막음 |
