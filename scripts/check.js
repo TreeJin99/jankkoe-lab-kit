@@ -80,6 +80,14 @@ function check(file) {
   for (const k of ["견적일자", "작성일"]) if (k in f && !DATE.test(f[k])) errs.push(`${k} "${f[k]}"는 2026. 10. 30. 모양이어야 합니다.`);
   if (/\d{6}-[1-4]\d{6}/.test(md)) errs.push("주민등록번호로 보이는 숫자가 있습니다.");
 
+  if (doc === "quote" && req && req.template) {
+    // 우리 회사 양식: 칸 위치가 제각각이라 합계 숫자만 본문에서 대조
+    const want = (() => { try { return calc(req.items); } catch (e) { errs.push(e.message); return null; } })();
+    if (want) for (const [label, v] of [["공급가액", want.supply], ["부가세", want.vat], ["합계", want.total]]) {
+      if (!md.includes(won(v))) errs.push(`${label} ${won(v)}이 문서에 없습니다 (우리 회사 양식 · 합계만 검산).`);
+    }
+    return errs.filter((e) => !/^(고객사|담당자|건명|상호|제목 아래)/.test(e));
+  }
   if (doc === "quote") {
     const items = (tbls.find((t) => t[0][0] === "No" && t[0][1] === "품목") || []).slice(1).filter((r) => r[1]);
     if (!items.length) errs.push("품목이 하나도 없습니다.");

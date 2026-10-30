@@ -12,7 +12,9 @@
       "Bash(cp examples/*)",
       "Edit(/outputs/**)",
       "Edit(/data/company.md)",
-      "Edit(/data/prices.md)"
+      "Edit(/data/prices.md)",
+      "Bash(mkdir -p outputs/*)",
+      "Bash(ls *)"
     ],
     "deny": [
       "Bash(rm -rf *)",

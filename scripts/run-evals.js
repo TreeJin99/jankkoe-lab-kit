@@ -99,6 +99,10 @@ function grade(dir, ck, run) {
     const idx = ck.agents.map((a) => order.indexOf(a));
     if (idx.some((i) => i < 0) || idx.some((v, i) => i && v < idx[i - 1])) fails.push(`서브에이전트 순서 ${order.join(" → ") || "없음"} (기대 ${ck.agents.join(" → ")})`);
   }
+  for (const [f, words] of Object.entries(ck.file_contains || {})) {
+    const t = fs.existsSync(path.join(dir, f)) ? fs.readFileSync(path.join(dir, f), "utf8") : "";
+    for (const w of words) if (!t.includes(w)) fails.push(`${f}에 "${w}" 없음`);
+  }
   if (ck.no_tool && run.calls.some((c) => c.name === ck.no_tool)) fails.push(`${ck.no_tool}를 부르면 안 됨`);
   if (run.denials) fails.push(`권한 거부 ${run.denials}건`);
   return fails;

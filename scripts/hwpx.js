@@ -29,11 +29,14 @@ function read(file) {
   return r.out;
 }
 
+// --template 경로가 있으면 기본 양식 대신 그 양식(우리 회사 hwpx)을 쓴다
+const TPL = (() => { const i = process.argv.indexOf("--template"); return i > 0 ? path.resolve(ROOT, process.argv[i + 1]) : null; })();
+
 function paths(doc, code) {
   if (!DOCS[doc]) throw new Error(`문서 종류는 quote · sow 중 하나입니다: ${doc}`);
   if (!/^[a-z0-9-]+$/.test(code || "")) throw new Error(`고객코드는 영문 소문자·숫자·하이픈만: ${code}`);
   return {
-    template: path.join(ROOT, "templates", `${doc}.hwpx`),
+    template: (doc === "quote" && TPL) || path.join(ROOT, "templates", `${doc}.hwpx`),
     draft: path.join(DRAFT_DIR, `${doc}_${code}.md`),
     output: path.join(ROOT, "outputs", `${doc}_${code}.hwpx`),
   };

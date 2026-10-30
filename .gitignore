@@ -6,3 +6,14 @@ outputs/*
 Thumbs.db
 .claude/settings.local.json
 node_modules/
+
+# 회사 자료·우리 양식은 올리지 않는다
+data/회사자료/*
+!data/회사자료/.gitkeep
+!data/회사자료/README.md
+templates/custom/*
+!templates/custom/.gitkeep
+!templates/custom/README.md
+!outputs/_requests/
+outputs/_requests/*
+!outputs/_requests/.gitkeep
