@@ -19,13 +19,13 @@ allowed-tools: Read Glob Grep Edit Write Agent AskUserQuestion Bash(node scripts
 
 ## 1. 이어받고 빠진 것만 묻기 (메인 대화)
 - 견적서·요청 기록(`outputs/_requests/{고객코드}.json`)에서 고객사 · 담당자 · 건명 · 품목 · 합계 · 납기을 가져온다.
-- AskUserQuestion으로 빠진 것만 묻는다: 착수일(오늘 / 계약일 / 직접 입력) · 산출물 추가(없음 / 직접 입력) · 납기가 "미정"이면 납기.
+- AskUserQuestion으로 빠진 것만 묻는다: 착수일(오늘 / 계약일 / 직접 입력) · 산출물 추가(없음 / 직접 입력) · 납기가 "미정"이면 납기 · 이번 일을 하는 이유(현재 문제, 모르면 건너뛰기) · 꼭 들어가야 할 요구사항(없음 / 직접 입력).
 - 수정 횟수·하자보수는 `data/company.md`의 계약 조건을 쓴다. 비어 있으면 묻고, company.md에 저장할지 확인한다.
-- 받은 값은 요청 기록에 `sow` 항목으로 덧붙인다(`{"start": "2026. 10. 30.", "deliverables": [...]}`).
+- 받은 값은 요청 기록에 `sow` 항목으로 덧붙인다(`{"start": "2026. 10. 30.", "deliverables": [...], "reason": "", "must": []}`).
 
 ## 2. 맡기기
 - 메인 대화는 `doc-writer`에게 고객코드를 주고 작성을 맡긴다 → 받은 경로로 `reviewer`에게 검수를 맡긴다. 질문은 메인만 한다.
-- **doc-writer 작성 단계**: ① `node scripts/hwpx.js read outputs/quote_{고객코드}.hwpx` ② `node scripts/hwpx.js draft sow {고객코드}`로 목차·과업 틀 받기 ③ 품목을 과업으로 묶어([references/task-mapping.md](references/task-mapping.md)) ( ) 자리 채우기([references/template-fields.md](references/template-fields.md)). 과업마다 목적·범위·요구사항·주 산출물(예시), 착수일~납기 주차표 ④ `node scripts/hwpx.js fill sow {고객코드}` (견본 서식으로 새로 생성). 자동 검산이 틀렸다고 하면 고쳐서 다시 fill, 통과하면 `node scripts/hwpx.js clean`. 명령·오류는 [references/kordoc-commands.md](references/kordoc-commands.md).
+- **doc-writer 작성 단계**: ① `node scripts/hwpx.js read outputs/quote_{고객코드}.hwpx` ② `node scripts/hwpx.js draft sow {고객코드}`로 목차·과업 틀 받기 ③ 품목을 과업으로 묶어([references/task-mapping.md](references/task-mapping.md)) ( ) 자리를 모두 채우기([references/template-fields.md](references/template-fields.md)). **분량 기준**([references/writing-guide.md](references/writing-guide.md)): 문서 4~6쪽, 과업마다 현재/개선 표 · 목적 3개 · 범위 표 · 요구사항 표 4행 이상 · 주 산출물 2~3개, 검수 항목 3개 이상. 고객 고유 사실은 받은 값만, 모르면 "확인 필요". 결과로만 알 수 있는 주소는 "(납품 시 기재)" ④ `node scripts/hwpx.js fill sow {고객코드}` (견본 서식으로 새로 생성). 자동 검산이 틀렸다고 하면 고쳐서 다시 fill, 통과하면 `node scripts/hwpx.js clean`. 명령·오류는 [references/kordoc-commands.md](references/kordoc-commands.md).
 
 ## 3. 끝 보고 (3줄 + 파일)
 > 읽은 파일: CLAUDE.md · data/company.md · 견적서 · 요청 기록

@@ -53,7 +53,7 @@ function main() {
   } else if (cmd === "fill" && a === "sow") {
     const p = paths(a, b);
     if (!fs.existsSync(p.draft)) throw new Error(`원고가 없습니다. 먼저 draft: ${path.relative(ROOT, p.draft)}`);
-    const left = (fs.readFileSync(p.draft, "utf8").match(/\((건명|작성일|고객사|담당자|상호|대표|착수일|납기|견적서 합계|과업 이름|한 줄|산출물|형태|계약 조건 또는 확인 필요|없음)\)/g) || []);
+    const left = (fs.readFileSync(p.draft, "utf8").match(/\((건명|작성일|고객사|담당자|상호|대표|착수일|납기|견적서 합계|과업 이름|한 줄|산출물|형태|항목|지금 상태|끝나면 달라지는 상태|무엇을 어디까지|요구사항|상세|비고|견적 품목|기준|방법|계약 조건 또는 확인 필요|없음|이번 [^)]*|이 과업[^)]*|자료·개인정보[^)]*|산출물 권리[^)]*|발주처가 줄[^)]*)\)/g) || []);
     if (left.length) { console.log(`아직 안 채운 자리 ${left.length}곳: ${[...new Set(left)].join(" ")}`); process.exit(2); }
     const r = kordoc(["generate", p.draft, "-o", p.output, "--template", p.template, "--silent"]);
     if (r.code !== 0 || !fs.existsSync(p.output)) throw new Error(`생성 실패\n${r.out}${r.err}`);

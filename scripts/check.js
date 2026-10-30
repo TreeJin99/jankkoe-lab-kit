@@ -117,10 +117,15 @@ function check(file) {
     if (!tasks.length) errs.push("과업 내용에 '과업 1.' 같은 과업이 하나도 없습니다.");
     const blocks = md.split(/\n□?\s*과업 \d+\./).slice(1);
     blocks.forEach((blk, i) => {
-      const t = tables(blk.split("\n## ")[0]).find((x) => (x[0][0] || "").startsWith("주 산출물"));
+      const tb = tables(blk.split("\n## ")[0]);
+      const t = tb.find((x) => (x[0][0] || "").startsWith("주 산출물"));
       if (!t || !t.slice(1).some((r) => r[0])) errs.push(`과업 ${i + 1}에 주 산출물(예시)이 없습니다.`);
+      const rq = tb.find((x) => x[0][1] === "요구사항");
+      if (!rq || rq.slice(1).filter((r) => r[1]).length < 4) errs.push(`과업 ${i + 1}의 요구사항이 4개보다 적습니다.`);
     });
-    if (/\((건명|고객사|과업 이름|한 줄|산출물|형태)\)/.test(md)) errs.push("채우지 않은 ( ) 자리가 남아 있습니다.");
+    const insp = tables(md).find((x) => x[0][1] === "검수 항목");
+    if (!insp || insp.slice(1).filter((r) => r[1]).length < 3) errs.push("검수 항목이 3개보다 적습니다.");
+    if (/\((건명|작성일|고객사|담당자|상호|대표|착수일|납기|견적서 합계|과업 이름|한 줄|산출물|형태|항목|지금 상태|끝나면 달라지는 상태|무엇을 어디까지|요구사항|상세|비고|견적 품목|기준|방법|계약 조건 또는 확인 필요|없음|이번 [^)]*|이 과업[^)]*|자료·개인정보[^)]*|산출물 권리[^)]*|발주처가 줄[^)]*)\)/.test(md)) errs.push("채우지 않은 ( ) 자리가 남아 있습니다.");
     const qt = quoteTotal(code);
     const contract = num(f["계약금액"]);
     if (qt === null) errs.push(`견적서 outputs/quote_${code}.hwpx가 없어 계약금액을 대조할 수 없습니다.`);
