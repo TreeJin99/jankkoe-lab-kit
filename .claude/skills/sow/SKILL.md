@@ -1,6 +1,6 @@
 ---
 name: sow
-description: outputs/의 견적서를 이어받아 빠진 것만 물은 뒤 목차 · 과업 개요 · 과업별 산출물 · 일정 · 검수가 있는 과업지시서 hwpx를 만든다. "과업지시서 만들어줘", "방금 견적서로 과업지시서", "과업지시서" 요청에 사용.
+description: outputs/의 견적서를 이어받아 빠진 것만 물은 뒤 표지 · 목차 · 위탁회사 현황 · 과업 개요 · 과업별 개요·목적·범위·산출물 · 일정 · 최종 산출물 · 검수 계획이 있는 과업지시서 hwpx를 만든다. "과업지시서 만들어줘", "방금 견적서로 과업지시서", "과업지시서" 요청에 사용.
 argument-hint: "[고객코드, 생략하면 가장 최근 견적서]"
 allowed-tools: Read Glob Grep Edit Write Agent AskUserQuestion Bash(node scripts/*) Bash(node */scripts/*)
 ---
@@ -26,7 +26,7 @@ allowed-tools: Read Glob Grep Edit Write Agent AskUserQuestion Bash(node scripts
 
 ## 2. 맡기기
 - 메인 대화는 `doc-writer`에게 고객코드를 주고 작성을 맡긴다 → 받은 경로로 `reviewer`에게 검수를 맡긴다. 질문은 메인만 한다.
-- **doc-writer 작성 단계**: ① `node scripts/hwpx.js read outputs/quote_{고객코드}.hwpx` ② `node scripts/hwpx.js draft sow {고객코드}`로 목차·과업 틀 받기 ③ 품목을 과업으로 묶어([references/task-mapping.md](references/task-mapping.md)) ( ) 자리를 모두 채우기([references/template-fields.md](references/template-fields.md)). **분량 기준**([references/writing-guide.md](references/writing-guide.md)): 문서 4~6쪽, 과업마다 현재/개선 표 · 목적 3개 · 범위 표 · 요구사항 표 4행 이상 · 주 산출물 2~3개, 검수 항목 3개 이상. 고객 고유 사실은 받은 값만, 모르면 "확인 필요". 결과로만 알 수 있는 주소는 "(납품 시 기재)" 과업마다 산출물 예시 그림 1장(`node scripts/mockup.js 종류 outputs/_draft/img/taskN.png`, 또는 `data/참고이미지/`의 이미지) ④ `node scripts/hwpx.js fill sow {고객코드}` (견본 서식으로 새로 생성, 그림 포함). 자동 검산이 틀렸다고 하면 고쳐서 다시 fill, 통과하면 `node scripts/hwpx.js clean`. 명령·오류는 [references/kordoc-commands.md](references/kordoc-commands.md).
+- **doc-writer 작성 단계**: ① `node scripts/hwpx.js read outputs/quote_{고객코드}.hwpx` ② `node scripts/hwpx.js draft sow {고객코드}`로 목차·과업 틀 받기 ③ 품목을 과업으로 묶어([references/task-mapping.md](references/task-mapping.md)) ( ) 자리를 모두 채우기([references/template-fields.md](references/template-fields.md)). **구조·분량 기준**([references/writing-guide.md](references/writing-guide.md)): 표지 → 목차 → 1. 위탁회사 현황 및 실적 → 2. 과업 내용(2.1 개요 · 2.2 과업별 1) 개요 2문장 이상 2) 목적 (가)(나)(다) 각 40자 이상 3) 범위 표 3행 이상·내용 30자 이상 4) 산출물 예시) → 3. 추진일정 → 4. 최종 산출물 → 5. 검수 계획(검수항목 3개 이상). 모자라면 자동 검산이 돌려보낸다. 고객 고유 사실은 받은 값만, 모르면 "확인 필요". 결과로만 알 수 있는 주소는 "(납품 시 기재)" 과업마다 산출물 예시 그림 1장(`node scripts/mockup.js 종류 outputs/_draft/img/taskN.png`, 또는 `data/참고이미지/`의 이미지) ④ `node scripts/hwpx.js fill sow {고객코드}` (견본 서식으로 새로 생성, 그림 포함). 자동 검산이 틀렸다고 하면 고쳐서 다시 fill, 통과하면 `node scripts/hwpx.js clean`. 명령·오류는 [references/kordoc-commands.md](references/kordoc-commands.md).
 
 ## 3. 끝 보고 (3줄 + 파일)
 > 읽은 파일: CLAUDE.md · data/company.md · 견적서 · 요청 기록

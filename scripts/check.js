@@ -70,13 +70,14 @@ function check(file) {
   const req = requestFor(code);
   if (!req) errs.push(`확정된 요청 기록 outputs/_requests/${code}.json이 없습니다. 사용자에게 받은 값을 먼저 저장하세요.`);
   const same = (label, got, want) => { if (req && want && got !== want) errs.push(`${label} "${got || ""}" → 요청 기록은 "${want}"`); };
-  same(doc === "quote" ? "고객사" : "발주처", f["고객사"] || f["발주처"], req && req.customer);
-  same("담당자", f["담당자"], req && req.contact);
-  same(doc === "quote" ? "건명" : "과업명", f["건명"] || f["과업명"], req && req.service);
+  if (doc === "quote") {
+    same("고객사", f["고객사"], req && req.customer);
+    same("담당자", f["담당자"], req && req.contact);
+    same("건명", f["건명"], req && req.service);
+  }
   if (doc === "quote" && req && !md.includes(`${req.customer} 귀하`)) errs.push(`제목 아래 "${req.customer} 귀하" 줄이 없습니다.`);
   const co = company();
   if (doc === "quote" && co["상호"] && f["상호"] !== co["상호"]) errs.push(`상호 "${f["상호"] || ""}" → data/company.md는 "${co["상호"]}"`);
-  if (doc === "sow" && co["상호"] && f["수행사"] !== co["상호"]) errs.push(`수행사 "${f["수행사"] || ""}" → data/company.md는 "${co["상호"]}"`);
   for (const k of ["견적일자", "작성일"]) if (k in f && !DATE.test(f[k])) errs.push(`${k} "${f[k]}"는 2026. 10. 30. 모양이어야 합니다.`);
   if (/\d{6}-[1-4]\d{6}/.test(md)) errs.push("주민등록번호로 보이는 숫자가 있습니다.");
 
@@ -115,22 +116,37 @@ function check(file) {
   } else {
     const tasks = md.match(/과업 \d+\./g) ? [...new Set(md.split("\n").filter((l) => /^□?\s*과업 \d+\./.test(l.trim())))] : [];
     if (!tasks.length) errs.push("과업 내용에 '과업 1.' 같은 과업이 하나도 없습니다.");
-    const blocks = md.split(/\n□?\s*과업 \d+\./).slice(1);
-    blocks.forEach((blk, i) => {
-      const tb = tables(blk.split("\n## ")[0]);
-      const t = tb.find((x) => (x[0][0] || "").startsWith("주 산출물"));
-      if (!t || !t.slice(1).some((r) => r[0])) errs.push(`과업 ${i + 1}에 주 산출물(예시)이 없습니다.`);
-      const rq = tb.find((x) => x[0][1] === "요구사항");
-      if (!rq || rq.slice(1).filter((r) => r[1]).length < 4) errs.push(`과업 ${i + 1}의 요구사항이 4개보다 적습니다.`);
-      if (!blk.split("\n## ")[0].includes("예시 이미지")) errs.push(`과업 ${i + 1}에 산출물 예시 그림 캡션("예시 이미지 · …")이 없습니다.`);
-    });
-    const insp = tables(md).find((x) => x[0][1] === "검수 항목");
-    if (!insp || insp.slice(1).filter((r) => r[1]).length < 3) errs.push("검수 항목이 3개보다 적습니다.");
-    if (/\((건명|작성일|고객사|담당자|상호|대표|착수일|납기|견적서 합계|과업 이름|한 줄|산출물|형태|항목|지금 상태|끝나면 달라지는 상태|무엇을 어디까지|요구사항|상세|비고|견적 품목|기준|방법|계약 조건 또는 확인 필요|없음|이번 [^)]*|이 과업[^)]*|자료·개인정보[^)]*|산출물 권리[^)]*|발주처가 줄[^)]*)\)/.test(md)) errs.push("채우지 않은 ( ) 자리가 남아 있습니다.");
+    // 2.1 과업 개요 목록: (과업명)(발주처)(수행기관)(과업 금액)
+    const item = (label) => { const m2 = md.match(new RegExp(`\\(${label}\\)\\s*([^\\n]+)`)); return m2 ? m2[1].trim() : ""; };
+    if (req && !item("과업명").includes(req.service)) errs.push(`(과업명) "${item("과업명")}" → 요청 기록 건명 "${req.service}"`);
+    if (req && !item("발주처").includes(req.customer)) errs.push(`(발주처) "${item("발주처")}" → 요청 기록 고객사 "${req.customer}"`);
+    if (co["상호"] && !item("수행기관").includes(co["상호"])) errs.push(`(수행기관) "${item("수행기관")}" → data/company.md 상호 "${co["상호"]}"`);
     const qt = quoteTotal(code);
-    const contract = num(f["계약금액"]);
-    if (qt === null) errs.push(`견적서 outputs/quote_${code}.hwpx가 없어 계약금액을 대조할 수 없습니다.`);
-    else if (contract !== qt) errs.push(`계약금액 ${won(contract)} → 견적서 합계 ${won(qt)}`);
+    const amt = num((item("과업 금액").match(/₩\s*([\d,]+)/) || [])[1]);
+    if (qt === null) errs.push(`견적서 outputs/quote_${code}.hwpx가 없어 과업 금액을 대조할 수 없습니다.`);
+    else if (amt !== qt) errs.push(`(과업 금액) ₩${won(amt)} → 견적서 합계 ₩${won(qt)}`);
+    // 과업별 분량
+    const blocks = md.split(/\n[□ㅇ]?\s*과업 \d+\.[^\n]*/).slice(1).map((blk) => blk.split("\n## ")[0]);
+    if (!blocks.length) errs.push("2.2 과업별 내용에 '과업 1.' 같은 과업이 없습니다.");
+    blocks.forEach((blk, i) => {
+      const n = i + 1;
+      const ov = (blk.split(/2\)\s*과업 목적/)[0].split(/1\)\s*과업 개요/)[1] || "");
+      if ((ov.match(/[다함음임됨]\./g) || []).length < 2) errs.push(`과업 ${n}의 과업 개요가 2문장보다 짧습니다.`);
+      const goals = blk.split("\n").map((l) => l.replace(/^[\s□ㅇ○-]+/, "")).filter((l) => /^\((가|나|다|라|마)\)/.test(l));
+      if (goals.length < 3) errs.push(`과업 ${n}의 과업 목적 (가)(나)(다)가 3개보다 적습니다.`);
+      goals.forEach((g) => { if (g.length < 40) errs.push(`과업 ${n} 목적 "${g.slice(0, 20)}…"이 40자보다 짧습니다.`); });
+      const tb = tables(blk);
+      const scope = tb.find((x) => x[0][0] === "항목" && x[0][1] === "내용");
+      const rows = scope ? scope.slice(1).filter((r) => r[0]) : [];
+      if (rows.length < 3) errs.push(`과업 ${n}의 과업 범위 표가 3행보다 적습니다.`);
+      rows.forEach((r) => { if ((r[1] || "").length < 30) errs.push(`과업 ${n} 범위 "${r[0]}" 내용이 30자보다 짧습니다.`); });
+      const out = tb.find((x) => x.some((r) => r[0] === "주 작업물"));
+      if (!out || !(out.find((r) => r[0] === "주 작업물") || [])[1]) errs.push(`과업 ${n}에 산출물 예시(주 작업물)가 없습니다.`);
+      if (!blk.includes("예시 이미지")) errs.push(`과업 ${n}에 산출물 예시 그림 캡션("예시 이미지 · …")이 없습니다.`);
+    });
+    const insp = tables(md).find((x) => x[0][1] === "검사항목");
+    if (!insp || insp.slice(1).filter((r) => r[1]).length < 3) errs.push("검수항목이 3개보다 적습니다.");
+    if (/\((건명|작성일|고객사|상호|대표|착수일|납기|과업 이름|짧은 라벨|항목|산출물|형태|관련 과업|검사항목|대상|주소|연락처|이 과업[^)]*|무엇을[^)]*|어떻게[^)]*|업종 \/[^)]*|연도별[^)]*|설립일[^)]*|사업자번호[^)]*|고객사 대표[^)]*|견적서 합계금액[^)]*|한 줄 소개|계약 조건 또는 확인 필요|자료·개인정보[^)]*|산출물 권리[^)]*|발주처가 줄[^)]*|산출물\(형태\)[^)]*)\)/.test(md)) errs.push("채우지 않은 ( ) 자리가 남아 있습니다.");
   }
   return errs;
 }
