@@ -12,8 +12,15 @@ const ROOT = path.resolve(__dirname, "..");
 const DOCS = { quote: "견적서", sow: "과업지시서" };
 const DRAFT_DIR = path.join(ROOT, "outputs", "_draft");
 
+// kordoc은 Node.js 20 이상에서만 이 킷이 쓰는 기능을 낸다(낮은 버전에서는 npx가 옛 kordoc을 받아 엉뚱한 오류가 난다).
+function needNode20() {
+  const major = Number(process.versions.node.split(".")[0]);
+  if (major < 20) throw new Error(`Node.js 20 이상이 필요합니다 (지금 v${process.versions.node}). https://nodejs.org 에서 LTS를 설치한 뒤 다시 해 주세요.`);
+}
+
 // kordoc이 깔려 있으면 그대로, 없으면 npx로 받아서 실행한다.
 function kordoc(args) {
+  needNode20();
   const win = process.platform === "win32";
   const has = spawnSync(win ? "where" : "which", ["kordoc"]).status === 0;
   const [cmd, full] = has ? ["kordoc", args] : ["npx", ["-y", "kordoc", ...args]];

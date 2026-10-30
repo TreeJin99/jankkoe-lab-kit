@@ -24,8 +24,8 @@ git clone https://github.com/TreeJin99/jankkoe-lab-kit.git
 | 필요한 것 | 확인 방법 |
 |---|---|
 | Claude 데스크톱 앱 (Pro 이상) 또는 Claude Code | 앱 왼쪽 위에 **Code** 탭이 보이면 됩니다 |
-| Node.js 20 이상 | 아래 첫 줄. 없으면 https://nodejs.org 에서 LTS 설치 |
-| 한글 문서 도구 kordoc | 아래 둘째 줄. 처음 한 번은 내려받느라 시간이 조금 걸립니다 |
+| Node.js 20 이상 | 아래 첫 줄. 없으면 https://nodejs.org 에서 LTS 설치 (18 이하는 "Node.js 20 이상이 필요합니다"라고 멈춥니다) |
+| 한글 문서 도구 kordoc | 아래 둘째 줄. 처음 한 번은 내려받느라 10초 안팎 걸립니다(깨끗한 PC 실측 8초) |
 | (윈도우만) Git for Windows | Claude Code가 윈도우에서 쓰는 도구입니다. 없으면 https://git-scm.com 에서 설치 |
 
 ```bash
