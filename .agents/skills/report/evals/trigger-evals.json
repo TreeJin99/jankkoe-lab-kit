@@ -1,0 +1,10 @@
+[
+  {"query": "작업일지로 결과보고서 만들어줘", "should_trigger": true},
+  {"query": "결과보고서 써줘", "should_trigger": true},
+  {"query": "바다상사 프로젝트 끝났으니 마무리 보고서 만들어줘", "should_trigger": true},
+  {"query": "오픈 후 성과 정리해서 결과보고서로 만들어줘", "should_trigger": true},
+  {"query": "받은 메일로 견적서 만들어줘", "should_trigger": false},
+  {"query": "방금 견적서로 과업지시서 만들어줘", "should_trigger": false},
+  {"query": "작업일지 보여줘", "should_trigger": false},
+  {"query": "부가세는 몇 퍼센트야?", "should_trigger": false}
+]

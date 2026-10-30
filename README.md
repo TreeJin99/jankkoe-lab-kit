@@ -106,17 +106,32 @@ templates/quote.hwpx 양식이 바뀌었어. 견적서 레시피의 칸 채우�
 | 회사 규칙 | `CLAUDE.md` | AI가 일하기 전에 먼저 읽는 규칙 (부가세 별도, 쉼표, 파일 이름, 금지 정보) |
 | 회사 규칙 (Codex용) | `AGENTS.md` | `CLAUDE.md`와 같은 내용 |
 | 룰 | `.claude/rules/templates.md` | `templates/`·`outputs/` 파일을 만질 때만 읽는 한글 양식 규칙 |
-| 레시피 (스킬) | `.claude/skills/quote · sow · report` | 문서별 5단계 순서. 세부는 각 폴더의 `references/` |
+| 레시피 (스킬) | `.claude/skills/quote · sow · report` | 문서별 작성 단계와 위임 순서. 세부는 `references/`, 시험은 `evals/` |
 | 레시피 (Codex용) | `.agents/skills/` | 같은 내용 |
 | 팀 (에이전트) | `.claude/agents/` | quote-writer 견적담당 · doc-writer 문서담당 · reviewer 검수담당 |
 | 자동 검산 (훅) | `.claude/hooks/check-outputs.js` | `outputs/`에 hwpx가 저장되면 바로 검산. 틀리면 AI에게 돌려보내 고치게 함 |
 | 권한 · 훅 설정 | `.claude/settings.json` | 실습 명령은 묻지 않고 실행, 위험한 명령(`rm -rf` 등)은 막음 |
-| 계산 · 양식 · 검산 도구 | `scripts/` | `calc.js` 금액 계산 · `hwpx.js` 양식 채우기 · `check.js` 검산 |
+| 계산 · 양식 · 검산 도구 | `scripts/` | `calc.js` 금액 계산 · `hwpx.js` 양식 채우기 · `check.js` 검산 · `run-evals.js` 스킬 평가 |
 | 받은 메일 | `inbox/` | 고객이 보낸 메일 (`날짜_고객코드.txt`) |
 | 자료 | `data/` | 단가표 `prices.md`, 작업일지 `worklog_고객코드.md` |
 | 양식 | `templates/` | 한글 양식 3종 (빈칸) |
 | 결과 | `outputs/` | 완성 문서 (`문서_고객코드.hwpx`) |
 | 연습 자료 | `examples/` | 두 번째 고객 메일 |
+
+### 스킬 구조 (예: `.claude/skills/quote/`)
+
+| 파일 | 하는 일 |
+|---|---|
+| `SKILL.md` | 이름·설명(언제 쓰나)·허용 도구 + 짧은 단계. 누가 작성하고 누가 검수하는지 |
+| `references/item-mapping.md` | 메일 요청 → 단가표 품목 고르는 규칙 (quote만) |
+| `references/template-fields.md` | 양식 칸마다 무엇을 채우는지 |
+| `references/kordoc-commands.md` | 명령 모음과 오류 대처 |
+| `evals/evals.json` | 잘 되는지 보는 시험 3~4건 (입력 문장 · 준비 파일 · 기대 결과 · 실패 기준) |
+| `evals/trigger-evals.json` | 이 스킬을 써야 하는 문장 / 쓰면 안 되는 문장 |
+| `evals/fixtures/` | 시험용 원고 (sow·report만: 미리 만들어 둔 견적서·과업지시서) |
+
+계산·양식·검산 도구는 세 스킬이 같이 쓰므로 스킬 폴더가 아니라 맨 위 `scripts/`에 한 벌만 둡니다.
+평가는 `node scripts/run-evals.js`(트리거는 `--trigger`)로 돌립니다. Claude 사용량이 드니 킷을 고칠 때만 쓰세요.
 
 ### 자동 검산이 하는 일
 AI가 `outputs/`에 hwpx를 저장하면 `scripts/check.js`가 바로 확인합니다.

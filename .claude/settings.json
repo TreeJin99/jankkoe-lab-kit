@@ -5,6 +5,7 @@
       "Skill",
       "Agent",
       "Bash(node scripts/*)",
+      "Bash(node */scripts/*)",
       "Bash(npx -y kordoc *)",
       "Bash(kordoc *)",
       "Edit(/outputs/**)"
