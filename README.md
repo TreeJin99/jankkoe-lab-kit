@@ -1,6 +1,6 @@
 # 잔꾀 연구소 실습 킷
 
-메일 한 통을 주면 AI가 **견적서 → 과업지시서 → 결과보고서**를 한글(hwpx) 파일로 만들고, 금액을 스스로 검산합니다.
+메일 한 통을 주면 AI가 **견적서 → 과업지시서**를 한글(hwpx) 파일로 만들고, 금액을 스스로 검산합니다.
 가상 회사 「새벽웹스튜디오」가 고객 「바다상사」의 홈페이지 리뉴얼 요청을 받은 상황입니다.
 
 > 회사·고객·금액·연락처는 모두 실습용 가상 정보입니다.
@@ -50,11 +50,8 @@ npx -y kordoc --version
 ```text
 방금 견적서로 과업지시서 만들어줘
 ```
-```text
-작업일지로 결과보고서 만들어줘
-```
 
-`outputs/` 폴더에 `quote_badasangsa.hwpx`(견적서) · `sow_badasangsa.hwpx`(과업지시서) · `report_badasangsa.hwpx`(결과보고서)가 생기면 성공입니다. 한글(한컴오피스)로 열어 보세요.
+`outputs/` 폴더에 `quote_badasangsa.hwpx`(견적서) · `sow_badasangsa.hwpx`(과업지시서)가 생기면 성공입니다. 한글(한컴오피스)로 열어 보세요.
 맞는 금액: 공급가액 4,950,000원 + 부가세 495,000원 = **합계 5,445,000원**
 
 ## 5. 더 해 보기
@@ -65,9 +62,6 @@ npx -y kordoc --version
 ```
 ```text
 /sow
-```
-```text
-/report
 ```
 
 **팀원(에이전트) 부르기**
@@ -97,7 +91,7 @@ templates/quote.hwpx 양식이 바뀌었어. 견적서 레시피의 칸 채우�
 ```
 
 **ChatGPT Codex에서 쓰기**
-같은 폴더를 Codex로 열면 `AGENTS.md`와 `.agents/skills/`를 읽습니다. 레시피는 `$quote` · `$sow` · `$report`로 부릅니다.
+같은 폴더를 Codex로 열면 `AGENTS.md`와 `.agents/skills/`를 읽습니다. 레시피는 `$quote` · `$sow`로 부릅니다.
 
 ## 6. 폴더 안에 있는 것
 
@@ -106,15 +100,15 @@ templates/quote.hwpx 양식이 바뀌었어. 견적서 레시피의 칸 채우�
 | 회사 규칙 | `CLAUDE.md` | AI가 일하기 전에 먼저 읽는 규칙 (부가세 별도, 쉼표, 파일 이름, 금지 정보) |
 | 회사 규칙 (Codex용) | `AGENTS.md` | `CLAUDE.md`와 같은 내용 |
 | 룰 | `.claude/rules/templates.md` | `templates/`·`outputs/` 파일을 만질 때만 읽는 한글 양식 규칙 |
-| 레시피 (스킬) | `.claude/skills/quote · sow · report` | 문서별 작성 단계와 위임 순서. 세부는 `references/`, 시험은 `evals/` |
+| 레시피 (스킬) | `.claude/skills/quote · sow` | 문서별 작성 단계와 위임 순서. 세부는 `references/`, 시험은 `evals/` |
 | 레시피 (Codex용) | `.agents/skills/` | 같은 내용 |
 | 팀 (에이전트) | `.claude/agents/` | quote-writer 견적담당 · doc-writer 문서담당 · reviewer 검수담당 |
 | 자동 검산 (훅) | `.claude/hooks/check-outputs.js` | `outputs/`에 hwpx가 저장되면 바로 검산. 틀리면 AI에게 돌려보내 고치게 함 |
 | 권한 · 훅 설정 | `.claude/settings.json` | 실습 명령은 묻지 않고 실행, 위험한 명령(`rm -rf` 등)은 막음 |
 | 계산 · 양식 · 검산 도구 | `scripts/` | `calc.js` 금액 계산 · `hwpx.js` 양식 채우기 · `check.js` 검산 · `run-evals.js` 스킬 평가 |
 | 받은 메일 | `inbox/` | 고객이 보낸 메일 (`날짜_고객코드.txt`) |
-| 자료 | `data/` | 단가표 `prices.md`, 작업일지 `worklog_고객코드.md` |
-| 양식 | `templates/` | 한글 양식 3종 (빈칸) |
+| 자료 | `data/` | 단가표 `prices.md` |
+| 양식 | `templates/` | 한글 양식 2종 (빈칸) |
 | 결과 | `outputs/` | 완성 문서 (`문서_고객코드.hwpx`) |
 | 연습 자료 | `examples/` | 두 번째 고객 메일 |
 
@@ -128,16 +122,16 @@ templates/quote.hwpx 양식이 바뀌었어. 견적서 레시피의 칸 채우�
 | `references/kordoc-commands.md` | 명령 모음과 오류 대처 |
 | `evals/evals.json` | 잘 되는지 보는 시험 3~4건 (입력 문장 · 준비 파일 · 기대 결과 · 실패 기준) |
 | `evals/trigger-evals.json` | 이 스킬을 써야 하는 문장 / 쓰면 안 되는 문장 |
-| `evals/fixtures/` | 시험용 원고 (sow·report만: 미리 만들어 둔 견적서·과업지시서) |
+| `evals/fixtures/` | 시험용 원고 (sow만: 미리 만들어 둔 견적서) |
 
-계산·양식·검산 도구는 세 스킬이 같이 쓰므로 스킬 폴더가 아니라 맨 위 `scripts/`에 한 벌만 둡니다.
+계산·양식·검산 도구는 두 스킬이 같이 쓰므로 스킬 폴더가 아니라 맨 위 `scripts/`에 한 벌만 둡니다.
 평가는 `node scripts/run-evals.js`(트리거는 `--trigger`)로 돌립니다. Claude 사용량이 드니 킷을 고칠 때만 쓰세요.
 
 ### 자동 검산이 하는 일
 AI가 `outputs/`에 hwpx를 저장하면 `scripts/check.js`가 바로 확인합니다.
 - 금액 = 단가 × 수량, 공급가액 = 금액의 합, 부가세 = 공급가액의 10%, 합계 = 공급가액 + 부가세
 - 단가가 단가표와 같은지, 고객사·담당자가 메일에 적힌 글자와 같은지, 날짜 모양이 맞는지
-- 과업지시서·결과보고서의 계약금액이 견적서 합계와 같은지
+- 과업지시서의 계약금액이 견적서 합계와 같은지
 
 틀리면 이유를 AI에게 돌려보내고, AI는 고쳐서 다시 저장합니다. 직접 돌려 볼 수도 있습니다.
 ```bash
@@ -147,7 +141,7 @@ node scripts/check.js
 ### MCP 연결 예시 (이 킷에는 설치하지 않음)
 MCP는 AI에게 바깥 도구를 이어 주는 연결선입니다. 실습에는 필요 없고, 회사에서 쓸 때 이렇게 붙입니다.
 - **구글 드라이브**: claude.ai 설정 → 커넥터에서 Google Drive를 연결하면 "드라이브의 최신 단가표로 견적서 만들어줘"처럼 쓸 수 있습니다.
-- **노션**: 같은 곳에서 Notion을 연결하면 "노션 프로젝트 페이지의 작업일지로 결과보고서 만들어줘"가 됩니다.
+- **노션**: 같은 곳에서 Notion을 연결하면 "노션 고객 페이지의 요청 사항으로 견적서 만들어줘"가 됩니다.
 
 ## 7. 주의
 

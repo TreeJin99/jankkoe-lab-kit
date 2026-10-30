@@ -1,6 +1,6 @@
 // 한글 양식(hwpx) 다루기. kordoc 하나만 쓴다. 맥·윈도우 공통.
-//   node scripts/hwpx.js draft <quote|sow|report> <고객코드>   양식을 원고(md)로 꺼냄 → outputs/_draft/
-//   node scripts/hwpx.js fill  <quote|sow|report> <고객코드>   원고를 양식에 넣어 outputs/에 저장
+//   node scripts/hwpx.js draft <quote|sow> <고객코드>   양식을 원고(md)로 꺼냄 → outputs/_draft/
+//   node scripts/hwpx.js fill  <quote|sow> <고객코드>   원고를 양식에 넣어 outputs/에 저장
 //   node scripts/hwpx.js read  <파일.hwpx>                    내용을 읽어 화면에 출력
 //   node scripts/hwpx.js clean                               outputs/_draft/ 원고 삭제
 const fs = require("fs");
@@ -8,7 +8,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
-const DOCS = { quote: "견적서", sow: "과업지시서", report: "결과보고서" };
+const DOCS = { quote: "견적서", sow: "과업지시서" };
 const DRAFT_DIR = path.join(ROOT, "outputs", "_draft");
 
 // kordoc이 깔려 있으면 그대로, 없으면 npx로 받아서 실행한다.
@@ -29,7 +29,7 @@ function read(file) {
 }
 
 function paths(doc, code) {
-  if (!DOCS[doc]) throw new Error(`문서 종류는 quote · sow · report 중 하나입니다: ${doc}`);
+  if (!DOCS[doc]) throw new Error(`문서 종류는 quote · sow 중 하나입니다: ${doc}`);
   if (!/^[a-z0-9-]+$/.test(code || "")) throw new Error(`고객코드는 영문 소문자·숫자·하이픈만: ${code}`);
   return {
     template: path.join(ROOT, "templates", `${doc}.hwpx`),

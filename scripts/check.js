@@ -48,8 +48,8 @@ function quoteTotal(code) {
 
 function check(file) {
   const name = path.basename(file).normalize("NFC");
-  const m = name.match(/^(quote|sow|report)_([a-z0-9-]+)\.hwpx$/);
-  if (!m) return [`파일 이름 규칙 위반: ${name} → quote|sow|report_고객코드.hwpx`];
+  const m = name.match(/^(quote|sow)_([a-z0-9-]+)\.hwpx$/);
+  if (!m) return [`파일 이름 규칙 위반: ${name} → quote|sow_고객코드.hwpx`];
   const [, doc, code] = m;
   const md = read(file);
   const tbls = tables(md);

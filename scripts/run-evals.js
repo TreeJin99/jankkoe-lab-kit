@@ -1,5 +1,5 @@
 // 스킬 평가 실행기 (킷 관리용. 실습에는 필요 없음. Claude 사용량이 듭니다)
-//   node scripts/run-evals.js                 세 스킬의 evals.json 전부
+//   node scripts/run-evals.js                 두 스킬의 evals.json 전부
 //   node scripts/run-evals.js quote           한 스킬만
 //   node scripts/run-evals.js quote --trigger 트리거 평가(trigger-evals.json)
 // 평가마다 임시 폴더에 킷을 복사해 claude -p로 돌리고, evals.json의 checks로 채점한다.
@@ -9,9 +9,9 @@ const path = require("path");
 const { spawn, spawnSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
-const SKILLS = ["quote", "sow", "report"];
-const WRITER = { quote: "quote-writer", sow: "doc-writer", report: "doc-writer" };
-const DOC_WORD = { quote: "견적서", sow: "과업지시서", report: "결과보고서" };
+const SKILLS = ["quote", "sow"];
+const WRITER = { quote: "quote-writer", sow: "doc-writer" };
+const DOC_WORD = { quote: "견적서", sow: "과업지시서" };
 const PARALLEL = 3;
 
 function copyKit() {

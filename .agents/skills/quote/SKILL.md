@@ -6,7 +6,7 @@ allowed-tools: Read Glob Grep Edit Write Agent Bash(node scripts/*) Bash(node */
 
 # 견적서 만들기
 
-**쓸 때**: 고객 메일로 견적서를 만들 때. **안 쓸 때**: 과업지시서(→ sow), 결과보고서(→ report), 단가표만 고칠 때, 질문만 할 때.
+**쓸 때**: 고객 메일로 견적서를 만들 때. **안 쓸 때**: 과업지시서(→ sow), 단가표만 고칠 때, 질문만 할 때.
 
 대상 메일: $ARGUMENTS
 (비어 있으면 `inbox/`에서 파일 이름 날짜가 가장 늦은 메일. 고객코드 = 파일 이름의 날짜 뒤 부분, 예: `2026-10-28_badasangsa.txt` → `badasangsa`)

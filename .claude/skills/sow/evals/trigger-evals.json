@@ -4,7 +4,7 @@
   {"query": "바다상사 과업지시서 만들어줘", "should_trigger": true},
   {"query": "견적서 바탕으로 과업 범위랑 일정 문서 만들어줘", "should_trigger": true},
   {"query": "받은 메일로 견적서 만들어줘", "should_trigger": false},
-  {"query": "작업일지로 결과보고서 만들어줘", "should_trigger": false},
+  {"query": "부가세는 몇 퍼센트야?", "should_trigger": false},
   {"query": "outputs 폴더 검사해줘", "should_trigger": false},
   {"query": "단가표 보여줘", "should_trigger": false}
 ]
