@@ -1,7 +1,7 @@
 // 한글 양식(hwpx) 다루기. kordoc 하나만 쓴다. 맥·윈도우 공통.
 //   node scripts/hwpx.js draft <quote|sow> <고객코드>   원고(md)를 outputs/_draft/에 만든다
 //                                                     quote = 양식 빈칸 원고, sow = 목차·과업 틀(templates/sow-outline.md)
-//   node scripts/hwpx.js fill  <quote|sow> <고객코드>   quote = 원고를 양식에 채움(patch), sow = 원고로 새로 생성(generate, 견본 templates/sow.hwpx)
+//   node scripts/hwpx.js fill  <quote|sow> <고객코드>   quote = 원고를 양식에 채움(patch), sow = 원고로 새로 생성(generate 후 sowlook.js로 표지·목차·쪽 나눔)
 //   node scripts/hwpx.js read  <파일.hwpx>                    내용을 읽어 화면에 출력
 //   node scripts/hwpx.js clean                               outputs/_draft/ 원고 삭제
 const fs = require("fs");
@@ -83,33 +83,18 @@ function main() {
     if (!fs.existsSync(p.draft)) throw new Error(`원고가 없습니다. 먼저 draft: ${path.relative(ROOT, p.draft)}`);
     const left = (fs.readFileSync(p.draft, "utf8").match(/\((건명|작성일|고객사|상호|대표|착수일|납기|과업 이름|짧은 라벨|항목|산출물|형태|관련 과업|검사항목|대상|주소|연락처|이 과업[^)]*|무엇을[^)]*|어떻게[^)]*|업종 \/[^)]*|연도별[^)]*|설립일[^)]*|사업자번호[^)]*|고객사 대표[^)]*|견적서 합계금액[^)]*|한 줄 소개|계약 조건 또는 확인 필요|자료·개인정보[^)]*|산출물 권리[^)]*|발주처가 줄[^)]*|산출물\(형태\)[^)]*)\)/g) || []);
     if (left.length) { console.log(`아직 안 채운 자리 ${left.length}곳: ${[...new Set(left)].join(" ")}`); process.exit(2); }
-    // 그림(![](경로))은 견본 모드가 넣지 않으므로 〔그림 N〕 자리로 바꿔 생성한 뒤 따로 넣는다
-    const pics = [];
-    const md = fs.readFileSync(p.draft, "utf8").replace(/^!\[[^\]]*\]\(([^)]+)\)\s*$/gm, (_, src) => {
-      const cands = [path.resolve(path.dirname(p.draft), src), path.resolve(ROOT, src)];
-      const file = cands.find((c) => fs.existsSync(c));
-      if (!file) { console.log(`그림 파일을 찾지 못해 건너뜀: ${src}`); return ""; }
-      pics.push({ n: pics.length + 1, file });
-      return `〔그림 ${pics.length}〕`;
-    });
+    // 과업지시서는 칸 수가 과업 수에 따라 달라서 양식 채우기 대신 원고로 새로 만든다(공문서 프리셋 + 고딕),
+    // 그다음 sowlook.js가 실제 위탁 용역 과업지시서 배치(회색 머리칸 · 표지 · 큰 목차 새 쪽)로 다듬는다.
     const gen = path.join(DRAFT_DIR, `.gen_${a}_${b}.md`);
+    const md = fs.readFileSync(p.draft, "utf8").replace(/^!\[[^\]]*\]\([^)]*\)\s*$/gm, "");
     fs.writeFileSync(gen, md);
-    const r = kordoc(["generate", gen, "-o", p.output, "--template", p.template, "--silent"]);
+    const r = kordoc(["generate", gen, "-o", p.output, "--preset", "보고서", "--font", "gothic", "--h2-marker", "none", "--total-row", "keep", "--no-page-numbers", "--silent"]);
     if (r.code !== 0 || !fs.existsSync(p.output)) throw new Error(`생성 실패\n${r.out}${r.err}`);
-    let put = 0;
-    if (pics.length) {
-      put = require("./hwpx-pics.js").insertPics(p.output, pics);
-      if (kordoc(["validate", p.output, "--silent"]).code !== 0) {
-        kordoc(["generate", gen.replace(/$/, ""), "-o", p.output, "--template", p.template, "--silent"]);
-        fs.writeFileSync(gen, md.replace(/^〔그림 \d+〕$/gm, ""));
-        kordoc(["generate", gen, "-o", p.output, "--template", p.template, "--silent"]);
-        put = 0;
-        console.log("그림을 넣은 파일이 구조 검사를 통과하지 못해 그림 없이 저장했습니다.");
-      }
-    }
+    const rq = fs.existsSync(reqPath(b)) ? JSON.parse(fs.readFileSync(reqPath(b), "utf8")) : {};
+    require("./sowlook.js").sowLook(p.output, rq.service);
     fs.rmSync(gen, { force: true });
     finish(a, b, p.output);
-    console.log(`저장: ${path.relative(ROOT, p.output)} (과업지시서, 견본 서식으로 생성${pics.length ? `, 그림 ${put}/${pics.length}장` : ""})`);
+    console.log(`저장: ${path.relative(ROOT, p.output)} (과업지시서, 원고로 생성)`);
   } else if (cmd === "draft") {
     const p = paths(a, b);
     fs.mkdirSync(DRAFT_DIR, { recursive: true });

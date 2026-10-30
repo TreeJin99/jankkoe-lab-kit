@@ -78,4 +78,4 @@ function setTitle(hwpx, title) {
   fs.writeFileSync(hwpx, zip(files));
 }
 
-module.exports = { insertPics, setTitle };
+module.exports = { insertPics, setTitle, unzip, zip };

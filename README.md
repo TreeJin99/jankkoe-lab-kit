@@ -128,7 +128,7 @@ templates/quote.hwpx 양식이 바뀌었어. 견적서 레시피의 칸 채우�
 | 권한 · 훅 설정 | `.claude/settings.json` | 실습 명령은 묻지 않고 실행, 위험한 명령(`rm -rf` 등)은 막음 |
 | 계산 · 양식 · 검산 도구 | `scripts/` | `calc.js` 금액 계산 · `hwpx.js` 양식 채우기 · `check.js` 검산 · `run-evals.js` 스킬 평가 |
 | 우리 회사 정보 | `data/` | `company.md` 회사 정보 · `prices.md` 단가표 (처음엔 빈 칸, AI가 물어서 채움) · `회사자료/` 사업자등록증 등 (저장소에 안 올라감) |
-| 양식 | `templates/` | 견적서 양식 · 과업지시서 견본·틀 · `custom/` 우리 회사 양식 (저장소에 안 올라감) |
+| 양식 | `templates/` | 견적서 양식 · 과업지시서 틀 · `custom/` 우리 회사 양식 (저장소에 안 올라감) |
 | 결과 | `outputs/` | 완성 문서 (`문서_고객코드.hwpx`) · 확정된 요청 기록 `_requests/고객코드.json` |
 | 예시 | `examples/` | `saebyeok/` 예시 회사(가상) · `onboarding/` 가상 사업자등록증 |
 

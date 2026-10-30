@@ -135,7 +135,8 @@ function check(file) {
     const tasks = md.match(/과업 \d+\./g) ? [...new Set(md.split("\n").filter((l) => /^□?\s*과업 \d+\./.test(l.trim())))] : [];
     if (!tasks.length) errs.push("과업 내용에 '과업 1.' 같은 과업이 하나도 없습니다.");
     // 2.1 과업 개요 목록: (과업명)(발주처)(수행기관)(과업 금액)
-    const item = (label) => { const m2 = md.match(new RegExp(`\\(${label}\\)\\s*([^\\n]+)`)); return m2 ? m2[1].trim() : ""; };
+    const plain = md.replace(/\*\*/g, "");
+    const item = (label) => { const m2 = plain.match(new RegExp(`\\(${label}\\)\\s*([^\\n]+)`)); return m2 ? m2[1].trim() : ""; };
     if (req && !item("과업명").includes(req.service)) errs.push(`(과업명) "${item("과업명")}" → 요청 기록 건명 "${req.service}"`);
     if (req && !item("발주처").includes(req.customer)) errs.push(`(발주처) "${item("발주처")}" → 요청 기록 고객사 "${req.customer}"`);
     if (co["상호"] && !item("수행기관").includes(co["상호"])) errs.push(`(수행기관) "${item("수행기관")}" → data/company.md 상호 "${co["상호"]}"`);
@@ -144,13 +145,13 @@ function check(file) {
     if (qt === null) errs.push(`견적서(outputs/견적서_${req ? safeName(req.customer) : code}.hwpx)가 없어 과업 금액을 대조할 수 없습니다.`);
     else if (amt !== qt) errs.push(`(과업 금액) ₩${won(amt)} → 견적서 합계 ₩${won(qt)}`);
     // 과업별 분량
-    const blocks = md.split(/\n[□ㅇ]?\s*과업 \d+\.[^\n]*/).slice(1).map((blk) => blk.split("\n## ")[0]);
+    const blocks = plain.split(/\n[□ㅇ]?\s*과업 \d+\.[^\n]*/).slice(1).map((blk) => blk.split("\n## ")[0]);
     if (!blocks.length) errs.push("2.2 과업별 내용에 '과업 1.' 같은 과업이 없습니다.");
     blocks.forEach((blk, i) => {
       const n = i + 1;
       const ov = (blk.split(/2\)\s*과업 목적/)[0].split(/1\)\s*과업 개요/)[1] || "");
       if ((ov.match(/[다함음임됨]\./g) || []).length < 2) errs.push(`과업 ${n}의 과업 개요가 2문장보다 짧습니다.`);
-      const goals = blk.split("\n").map((l) => l.replace(/^[\s□ㅇ○-]+/, "")).filter((l) => /^\((가|나|다|라|마)\)/.test(l));
+      const goals = blk.split("\n").map((l) => l.replace(/^[\s□ㅇ○\\-]+/, "")).filter((l) => /^\((가|나|다|라|마)\)/.test(l));
       if (goals.length < 3) errs.push(`과업 ${n}의 과업 목적 (가)(나)(다)가 3개보다 적습니다.`);
       goals.forEach((g) => { if (g.length < 40) errs.push(`과업 ${n} 목적 "${g.slice(0, 20)}…"이 40자보다 짧습니다.`); });
       const tb = tables(blk);
@@ -160,7 +161,6 @@ function check(file) {
       rows.forEach((r) => { if ((r[1] || "").length < 30) errs.push(`과업 ${n} 범위 "${r[0]}" 내용이 30자보다 짧습니다.`); });
       const out = tb.find((x) => x.some((r) => r[0] === "주 작업물"));
       if (!out || !(out.find((r) => r[0] === "주 작업물") || [])[1]) errs.push(`과업 ${n}에 산출물 예시(주 작업물)가 없습니다.`);
-      if (!blk.includes("예시 이미지")) errs.push(`과업 ${n}에 산출물 예시 그림 캡션("예시 이미지 · …")이 없습니다.`);
     });
     const insp = tables(md).find((x) => x[0][1] === "검사항목");
     if (!insp || insp.slice(1).filter((r) => r[1]).length < 3) errs.push("검수항목이 3개보다 적습니다.");
